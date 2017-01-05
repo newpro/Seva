@@ -1,0 +1,20 @@
+# framework
+flask
+
+# user
+flask_user
+
+# form
+flask_wtf
+wtforms
+
+# uploads
+flask_uploads
+
+# db
+flask_sqlalchemy
+psycopg2
+
+# firebase
+pyrebase
+jwt # tmp fix, break dependency
