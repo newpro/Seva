@@ -37,7 +37,7 @@ def setup(*args, **kwargs):
     if app.config['RESET_DB']:
         from utilities import Preload
         preload = Preload(db_schema=dbs, fire_schema=firedbs, db_util=db_util)
-        preload.reset_db(relational=False, realtime=True)
+        preload.reset_db(relational=False, realtime=False)
 
 # -- Views --
 import views
