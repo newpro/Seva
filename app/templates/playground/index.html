@@ -1,0 +1,23 @@
+{% extends "frame/bootstrap.html" %}
+
+{# Page Settings #}
+{% set current_page = 'Rapid Template System Playground' %}
+{% set active_page = current_page %}
+
+{% block page_header %}
+{{ current_page|title }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ current_page|title }}</h1>
+
+<div class="demo">
+    <div class="title">fat_info_panel</div>
+    <div class="code">fat_info_panel('title', 'subtitle', contextual='info', fa_icon='database', details = 'View Details')</div>
+    <div class="row">
+        {% from "macro/bootstrap/components/_panel.html" import fat_info_panel %}
+        {{ fat_info_panel('title', 'subtitle', contextual='info', fa_icon='database', details = 'View Details')}}
+    </div>
+</div>
+
+{% endblock %}

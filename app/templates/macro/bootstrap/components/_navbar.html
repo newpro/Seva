@@ -1,0 +1,39 @@
+<!-- normal no child sidebar element -->
+{% macro sidebar_li(label, link, fa_code, active=none, children_list = '') %}
+{#
+        Info for active mapping:
+        Active is sync with label or children's label, this requires no duplicate label.
+        Labeling system is different from url system. For example url: objecttype is labeled as object type for human readability.
+#}
+    <li>
+        <a href="{{ link }}"{% if active == label %} class="active"{% endif %}>
+            <i class="fa {{ fa_code }} fa-fw"></i> {{ label|title }}
+            {% if children_list %}
+            <span class="fa-align-right list"></span>
+            {% endif %}
+        </a>
+        {% if children_list %}
+        <ul class="nav nav-second-level collapse in">
+        {% for child in children_list %}
+            <li>
+                <a href="{{ child.link }}" {% if active == child.label %} class="active"{% endif %}>{{ child.label }}</a>
+            </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    </li>
+{% endmacro %}
+
+<!-- sidebar search element -->
+{% macro sidebar_li_search(place_holder) %}
+    <li class="sidebar-search">
+        <div class="input-group custom-search-form">
+            <input type="text" class="form-control" placeholder="{{ place_holder }}">
+            <span class="input-group-btn">
+            <button class="btn btn-default" type="button">
+                <i class="fa fa-search"></i>
+            </button>
+        </span>
+        </div>
+    </li>
+{% endmacro %}

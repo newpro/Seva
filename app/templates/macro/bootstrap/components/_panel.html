@@ -1,0 +1,24 @@
+{% macro fat_info_panel(title, subtitle, contextual='primary', fa_icon='comments', details = 'View Details') %}
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-{{ contextual }}">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-{{ fa_icon }} fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div style="font-size: 40px;">{{ title }}</div>
+                        <div>{{ subtitle }}</div>
+                    </div>
+                </div>
+            </div>
+            <a href="#">
+                <div class="panel-footer">
+                    <span class="pull-left">{{ details }}</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+{% endmacro %}

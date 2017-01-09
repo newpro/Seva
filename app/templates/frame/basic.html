@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- Overwrite sequence: description, title, static-->
+<html lang="en">
+<head>
+    {% block head %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="{% block description %}{% endblock %}">
+        <meta name="author" content="Aaron Li">
+        <title>{% block title %}{% endblock %} - Flaskboost</title>
+        {% block css %}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+  <div id="content">{% block content %}{% endblock %}</div>
+  <div id="footer">
+    {% block footer %}
+    &copy; MIT LICENCE by <a href="https://github.com/newpro/flaskboost">Flaskboost</a>.
+    {% endblock %}
+  </div>
+  {% block js %}
+  {% endblock %}
+</body>
+</html>
