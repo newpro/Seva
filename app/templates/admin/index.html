@@ -1,0 +1,16 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+  {% if current_user.is_authenticated %}
+    <h1>Hey there, {{ current_user.username|e }}</h1>
+    <div>You have access rights: </div>
+    <ul>
+      {% for role in current_user.roles %}
+        <li>{{ role.name|e }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <h1>You are not login</h1>
+    <h2>You have 0 access right. <a href="/user/login">login</a><h2>
+  {% endif %}
+{% endblock %}

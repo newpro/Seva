@@ -4,7 +4,6 @@ class DB_util():
     """
     def __init__(self, db):
         self.db = db # connect to db
-        self.tmp_session = []
 
     def drop(self):
         """
