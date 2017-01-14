@@ -31,11 +31,7 @@ class Role(db.Model):
                         backref=db.backref("role_hierarchys"),
                         lazy='dynamic')
 
-    def __init__(self, name, color=None, icon=None):
-        self.name = name
-        self.color = color
-        self.icon = icon
-
+    # -- Helpers --
     def __repr__(self):
         return '<Role %r>' % (self.name)
 
@@ -98,20 +94,13 @@ class User(db.Model, UserMixin):
                          secondary=user_roles,
                          lazy='dynamic')
 
-    def __init__(self, username, email, password,
-                 active=False, first_name = None, last_name = None,
-                 profile_url=None):
-        self.username = username
-        self.email = email
-        self.is_enabled = active
-        if active:
-            self.confirmed_at = datetime.utcnow()
-        self.password = user_manager.hash_password(password)
-        self.first_name = first_name
-        self.last_name = last_name
-        self.profile_url = profile_url
-        # CANDY: add optional user fields in init
+    # -- Column overwrite --
+    def __init__(self, *args, **kwargs):
+        super(User, self).__init__(*args, **kwargs)
+        if self.password:
+            self.password = user_manager.hash_password(self.password)
 
+    # -- Helpers --
     def add(self):
         util.add(self)
 
@@ -125,8 +114,10 @@ class User(db.Model, UserMixin):
     def is_active(self):
         return self.is_enabled
 
-    def has_role(self, role_ref):
-        return role_ref in self.roles.all()
+    def has_role(self, role, ref=False):
+        if not ref:
+            role = fetch('role', role)
+        return role in self.roles.all()
 
     def add_role(self, role_name):
         """
@@ -136,6 +127,7 @@ class User(db.Model, UserMixin):
         lower_roles = role_ref.hierarchy.all() # fetch all lower roles
         for role in lower_roles: # add all lower roles
             self.add_one_role(role, ref=True)
+        self.add_one_role(role_ref, ref=True)
         util.commit()
 
     def add_one_role(self, role, ref=False):
@@ -148,11 +140,14 @@ class User(db.Model, UserMixin):
             role_ref = fetch('role', role)
         if not role_ref:
             raise Exception('Role not exists')
-        if self.has_role(role_ref):
+        if self.has_role(role_ref, ref=True):
             print '--- Warning: role "{}" already exists, ignored ---'.format(role_ref.name)
             return
         self.roles.append(role_ref)
         util.commit()
+
+    def verify_password(self, hashcode):
+        return user_manager.verify_password(hashcode, self)
 
     def __repr__(self):
         return '<User %r, %r>' % (self.id, self.username)
@@ -204,10 +199,10 @@ def _init_roles():
 
     * Level control: 'user', 'service', 'admin', 'boss'
     """
-    user = Role('user', color='4DBD33', icon='user').pip()
-    service = Role('service', color='57A8BB', icon='fax').pip().add_hierarchy([user])
-    admin = Role('admin', color='F16236', icon='user-plus').pip().add_hierarchy([user, service])
-    boss = Role('boss', color='E63E3B', icon='user-secret').pip().add_hierarchy([user, service, admin])
+    user = Role(name='user', color='4DBD33', icon='user').pip()
+    service = Role(name='service', color='57A8BB', icon='fax').pip().add_hierarchy([user])
+    admin = Role(name='admin', color='F16236', icon='user-plus').pip().add_hierarchy([user, service])
+    boss = Role(name='boss', color='E63E3B', icon='user-secret').pip().add_hierarchy([user, service, admin])
     # CANDY: add additional roles
 
 def _init_data():

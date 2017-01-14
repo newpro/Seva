@@ -4,6 +4,7 @@ import secret as sec
 class DevelopmentConfig(Config):
     DEBUG = True
     SECRET_KEY = sec.local_secret
+    SQLALCHEMY_ECHO = True # Log any sqlalchemy error
     SQLALCHEMY_DATABASE_URI = ('postgresql://{}:{}@{}/{}').format(sec.local_db_user,
                                                                   sec.local_db_password,
                                                                   sec.local_db_location,

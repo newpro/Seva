@@ -15,6 +15,9 @@ flask_uploads
 flask_sqlalchemy
 psycopg2
 
+# management
+flask_admin
+
 # firebase
 pyrebase
 jwt # tmp fix, break dependency
