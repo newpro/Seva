@@ -17,6 +17,7 @@ psycopg2
 
 # management
 flask_admin
+flask_s3
 
 # firebase
 pyrebase

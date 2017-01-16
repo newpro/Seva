@@ -4,7 +4,7 @@ from wtforms import TextField, validators, ValidationError, SubmitField, SelectF
 from wtforms.fields.html5 import DateField
 from wtforms_sqlalchemy.orm import model_form
 from flask_uploads import UploadSet, IMAGES
-from . import dbs, db_session
+from . import dbs
 
 # ---- Helpers ----
 images_set = UploadSet('images', IMAGES)
@@ -48,4 +48,7 @@ def _image(note):
     ])
 
 # ---- Forms ----
+class UploadAll(FlaskForm):
+    filter_regex = TextField("Optional file regex")
+
 # CRUMBS: add your forms here

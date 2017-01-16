@@ -1,5 +1,5 @@
 from basic import Config
-from secret.secrets import remote as sec
+from secret import remote as sec
 
 class ProductionConfig(Config):
     DEBUG = False

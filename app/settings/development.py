@@ -1,11 +1,14 @@
 from basic import Config
-from secret.secrets import remote as sec
+import settings
+from secret import local as sec
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    if settings.s3:
+        FLASKS3_DEBUG = True # force serving s3
     SQLALCHEMY_ECHO = True # Log any sqlalchemy error
     SECRET_KEY = sec['secret']
-    if sec['db']['url']:
+    if 'url' in sec['db']:
         SQLALCHEMY_DATABASE_URI = sec['db']['url']
     else:
         SQLALCHEMY_DATABASE_URI = ('postgresql://{}:{}@{}/{}').format(sec['db']['user'],

@@ -1,7 +1,21 @@
 import settings
+from secret import global_ as g
 
 class Config(object):
-    TESTING = False
+    DEBUG = False
     USER_APP_NAME = settings.app_name
     RESET_DB = settings.reset_db
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True # SQL debug printout
+    FLASKS3_ONLY_MODIFIED = True # only upload modified
+    if settings.s3_caching:
+        FLASKS3_HEADERS = {
+            'Expires': 'Thu, 15 Apr 2200 20:00:00 GMT',
+            'Cache-Control': 'max-age=86400',
+        }
+
+    if g['aws']:
+        AWS_ACCESS_KEY_ID = g['aws']['key']
+        AWS_SECRET_ACCESS_KEY = g['aws']['secret']
+        FLASKS3_BUCKET_NAME = g['aws']['bucket']
+        if 'region' in g['aws']:
+            FLASKS3_REGION = g['aws']['region']

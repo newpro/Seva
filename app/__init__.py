@@ -1,5 +1,4 @@
 from flask import Flask
-
 app = Flask(__name__)
 
 # -- Import settings --
@@ -30,6 +29,10 @@ from utilities import DB_util
 db_util = DB_util(db)
 # ---- load schema ----
 import dbs, firedbs
+# ---- load Amazon static support ----
+from flask_s3 import FlaskS3
+s3 = FlaskS3()
+s3.init_app(app)
 
 # -- Pre operations --
 @app.before_first_request
