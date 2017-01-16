@@ -1,7 +1,8 @@
-{% macro fieldset(sub_title, fields, security_token) -%}
+{% macro fieldset(form, title='') -%}
     <fieldset>
-        {{ security_token }}
-        {% for field in fields %}
+        <legend>{{ title }}</legend>
+        {{ form.hidden_tag() }}
+        {% for field in form if field.id != 'csrf_token' %}
             <div class="form-group {% if field.errors %}has-error{% endif %} {{ kwargs.pop('class_', '') }}">
                 <label for="{{ field.id }}" class="control-label">{{ field.label }}</label>
                 {{ field(class_='form-control', **kwargs) }}
