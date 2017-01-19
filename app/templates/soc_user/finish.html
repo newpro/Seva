@@ -1,0 +1,6 @@
+<h1>You have successfully login via {{ provider|title }}</h1>
+<h2>Fill in additional info to finish register!</h2>
+{% from "macro/bootstrap/components/_form.html" import fieldset %}
+<form action="{{ url_for('oauth_finish') }}" method="POST">
+  {{ fieldset(form, title='Additional Info') }}
+</form>

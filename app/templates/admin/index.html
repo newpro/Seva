@@ -11,6 +11,6 @@
     </ul>
   {% else %}
     <h1>You are not login</h1>
-    <h2>You have 0 access right. <a href="/user/login">login</a><h2>
+    <h2>You have 0 access right. <a href={{ url_for('user.login') }}>login</a><h2>
   {% endif %}
 {% endblock %}

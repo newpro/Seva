@@ -33,6 +33,10 @@ import dbs, firedbs
 from flask_s3 import FlaskS3
 s3 = FlaskS3()
 s3.init_app(app)
+# ---- load mongo support ----
+if app.config['MONGODB_HOST']:
+    from pymongo import MongoClient
+    app.mongo = MongoClient(app.config['MONGODB_HOST'], app.config['MONGODB_PORT'])['social']
 
 # -- Pre operations --
 @app.before_first_request

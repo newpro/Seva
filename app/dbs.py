@@ -14,22 +14,28 @@ role_hierarchys = db.Table('role_hierarchy',
     db.Column('role_fk', db.Integer, db.ForeignKey('role.id'))
 )
 
+social_logins = db.Table('social_login',
+    db.Column('index', db.Integer, primary_key=True),
+    db.Column('user_fk', db.Integer, db.ForeignKey('user.id')),
+    db.Column('soc_id', db.Integer, db.ForeignKey('social.id'))
+)
+
 # ---- Tables ----
 class Role(db.Model):
     __tablename__ = 'role'
 
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=True) 
+    name = db.Column(db.String(25), unique=True, nullable=True)
     color = db.Column(db.String(6), unique=True, nullable=True) # 6 digits hash code
-    icon = db.Column(db.String(30), unique=True, nullable=True) # font awesome icon code
+    icon = db.Column(db.String(25), unique=True, nullable=True) # font awesome icon code
 
     # -- Role Hierarchy --
     hierarchy = relationship("Role",
-                        secondary=role_hierarchys,
-                        primaryjoin=id==role_hierarchys.c.primary_fk,
-                        secondaryjoin=id==role_hierarchys.c.role_fk,
-                        backref=db.backref("role_hierarchys"),
-                        lazy='dynamic')
+                             secondary=role_hierarchys,
+                             primaryjoin=id==role_hierarchys.c.primary_fk,
+                             secondaryjoin=id==role_hierarchys.c.role_fk,
+                             backref=db.backref("role_hierarchys"),
+                             lazy='dynamic')
 
     # -- Helpers --
     def __repr__(self):
@@ -56,6 +62,24 @@ class Role(db.Model):
     def is_higher(self, role):
         return self.hierarchy.filter(role_hierarchys.c.role_fk == role.id).count() > 0
 
+class SocialPlatform(db.Model):
+    __tablename__ = 'social'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(25), unique=True, nullable=True)
+    icon = db.Column(db.String(25), unique=True, nullable=True)
+
+    # -- Helpers --
+    def __repr__(self):
+        return '<Role %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
 from flask_user import UserMixin
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -73,17 +97,18 @@ class User(db.Model, UserMixin):
     # -- User Authentication information --
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False, default='')
+    create_at = db.Column(db.DateTime, onupdate=datetime.now)
     reset_password_token = db.Column(db.String(100), nullable=False, default='')
 
     # -- User Email information --
     email = db.Column(db.String(255), nullable=False, unique=True)
-    confirmed_at = db.Column(db.DateTime())
+    confirmed_at = db.Column(db.DateTime(), nullable=True)
 
     # -- User information --
     is_enabled = db.Column(db.Boolean(), nullable=False, default=False)
     first_name = db.Column(db.String(50), nullable=False, default='')
     last_name = db.Column(db.String(50), nullable=False, default='')
-    confirmed_at = db.Column(db.DateTime())
+    social_id = db.Column(db.String(64), nullable=True, unique=True)
 
     # -- Optional field --
     # CANDY: Optional user fields
@@ -92,6 +117,10 @@ class User(db.Model, UserMixin):
     # -- Relationships --
     roles = relationship("Role",
                          secondary=user_roles,
+                         lazy='dynamic')
+
+    social = relationship("SocialPlatform",
+                         secondary=social_logins,
                          lazy='dynamic')
 
     # -- Column overwrite --
@@ -119,6 +148,11 @@ class User(db.Model, UserMixin):
             role = fetch('role', role)
         return role in self.roles.all()
 
+    def has_social_provider(self, provider, ref=False):
+        if not ref:
+            provider = fetch('provider', provider)
+        return provider in self.social.all()
+
     def add_role(self, role_name):
         """
         Add the role and all roles lower than it
@@ -144,6 +178,19 @@ class User(db.Model, UserMixin):
             print '--- Warning: role "{}" already exists, ignored ---'.format(role_ref.name)
             return
         self.roles.append(role_ref)
+        util.commit()
+
+    def add_social(self, provider, ref=False):
+        if ref:
+            provider_ref = provider
+        else:
+            provider_ref = fetch('provider', provider)
+        if not provider_ref:
+            raise Exception('Provide does not exists')
+        if self.has_social_provider(provider_ref, ref=True):
+            print '--- Warning: social provider "{}" already in user, ignored ---'.format(provider_ref.name)
+            return
+        self.social.append(provider_ref)
         util.commit()
 
     def verify_password(self, hashcode):
@@ -179,8 +226,11 @@ def fetch(column, index):
         _db = Role
         field = Role.name
     # CRUMB: add additional tables for fetching
+    elif column == 'provider':
+        _db = SocialPlatform
+        field = SocialPlatform.name
     else:
-        raise ('Column not recognizable')
+        raise Exception('Column not recognizable')
     return _db.query.filter(field==index).first()
 
 # -- Validators --
@@ -202,24 +252,29 @@ def _init_roles():
     user = Role(name='user', color='4DBD33', icon='user').pip()
     service = Role(name='service', color='57A8BB', icon='fax').pip().add_hierarchy([user])
     admin = Role(name='admin', color='F16236', icon='user-plus').pip().add_hierarchy([user, service])
-    boss = Role(name='boss', color='E63E3B', icon='user-secret').pip().add_hierarchy([user, service, admin])
     # CANDY: add additional roles
+
+def _init_social():
+    SocialPlatform(name='twitter', icon='twitter-square').add()
+    SocialPlatform(name='facebook', icon='facebook-square').add()
 
 def _init_data():
     User(username='user_test', email='user1@email.com', active=True,
-         password = '007', first_name = 'duck', last_name = 'mcgill').pip().add_role('user')
+         password = '007', first_name = 'duck', last_name = 'mcgill', is_enabled=True).pip().add_role('user')
     User(username='service_test', email='service1@email.com', active=True,
-         password = '007', first_name = 'goose', last_name = 'abilio').pip().add_role('service')
-    User(username='admin_test', email='admin1@email.com', active=True,
-         password = '007', first_name = 'sponge', last_name = 'bob').pip().add_role('admin')
-    User(username='boss_test', email='boss1@email.com', active=True,
-         password = '007', first_name = 'lion', last_name = 'king').pip().add_role('boss')
+         password = '007', first_name = 'goose', last_name = 'abilio', is_enabled=True).pip().add_role('service')
+    admin_test = User(username='admin_test', email='admin1@email.com', active=True,
+                      password = '007', first_name = 'sponge', last_name = 'bob',
+                      is_enabled=True, confirmed_at=datetime.now()).pip()
+    admin_test.add_role('admin')
+    admin_test.add_social('facebook')
     # CANDY: add additional user for roles here
     # CRUMB: add additional table tests here
 
 def _RESET_DB():
     # -- reset in dependency order --
     util.reset()
+    _init_social()
     _init_roles()
     _init_data()
 

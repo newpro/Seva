@@ -18,3 +18,6 @@ class DevelopmentConfig(Config):
     REALTIME_URL = sec['realtime']['url']
     REALTIME_CRED_PATH = sec['realtime']['cred_path']
     REALTIME_KEY = sec['realtime']['api_key']
+    if settings.store_user:
+        MONGODB_HOST = sec['mongo']['host']
+        MONGODB_PORT = sec['mongo']['port']

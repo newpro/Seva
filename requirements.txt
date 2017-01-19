@@ -1,8 +1,12 @@
 # framework
 flask
+gcloud
+protobuf==3.1.0 # fixed for pyrebase incompatability with python 2.7
 
 # user
 flask_user
+rauth
+pymongo
 
 # form
 flask_wtf
@@ -13,7 +17,7 @@ flask_uploads
 
 # db
 flask_sqlalchemy
-psycopg2
+#psycopg2
 
 # management
 flask_admin

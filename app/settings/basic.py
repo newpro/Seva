@@ -19,3 +19,20 @@ class Config(object):
         FLASKS3_BUCKET_NAME = g['aws']['bucket']
         if 'region' in g['aws']:
             FLASKS3_REGION = g['aws']['region']
+
+    # --- USER ----
+    USER_LOGIN_TEMPLATE = 'flask_user/login_or_register.html'
+    USER_REGISTER_TEMPLATE = 'flask_user/login_or_register.html'
+    STORE_USER = settings.store_user
+    OAUTHS = {}
+    if g['oauth']:
+        if 'twitter' in g['oauth']:
+            OAUTHS['twitter'] = {
+                'id': g['oauth']['twitter']['key'],
+                'secret': g['oauth']['twitter']['secret']
+            }
+        if 'facebook' in g['oauth']:
+            OAUTHS['facebook'] = {
+                'id': g['oauth']['facebook']['key'],
+                'secret': g['oauth']['facebook']['secret']
+            }
