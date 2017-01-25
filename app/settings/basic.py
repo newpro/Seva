@@ -13,7 +13,7 @@ class Config(object):
             'Cache-Control': 'max-age=86400',
         }
 
-    if g['aws']:
+    if 'aws' in g:
         AWS_ACCESS_KEY_ID = g['aws']['key']
         AWS_SECRET_ACCESS_KEY = g['aws']['secret']
         FLASKS3_BUCKET_NAME = g['aws']['bucket']
@@ -25,7 +25,8 @@ class Config(object):
     USER_REGISTER_TEMPLATE = 'flask_user/login_or_register.html'
     STORE_USER = settings.store_user
     OAUTHS = {}
-    if g['oauth']:
+    # Warning: if oauth also provide in runtime specific settings, this will be overwrite
+    if 'oauth' in g:
         if 'twitter' in g['oauth']:
             OAUTHS['twitter'] = {
                 'id': g['oauth']['twitter']['key'],
@@ -37,7 +38,7 @@ class Config(object):
                 'secret': g['oauth']['facebook']['secret']
             }
     # ---- Payment ----
-    if settings.payment_enabled:
+    if settings.payment:
         PAYMENT_ENABLED = True
         CURRENCY = settings.payment_currency
         STORE_PAYMENT = settings.store_payment

@@ -2,8 +2,10 @@ from basic import Config
 from secret import remote as sec
 
 class ProductionConfig(Config):
+    # -- basic --
     DEBUG = False
     SECRET_KEY = sec.remote_secret
+    # -- DB --
     if sec['db']['url']:
         SQLALCHEMY_DATABASE_URI = sec['db']['url']
     else:
@@ -15,9 +17,24 @@ class ProductionConfig(Config):
     REALTIME_URL = sec['realtime']['url']
     REALTIME_CRED_PATH = sec['realtime']['cred_path']
     REALTIME_KEY = sec['realtime']['api_key']
-    if settings.store_user:
+    # -- mongo --
+    if settings.mongo:
         MONGODB_HOST = sec['mongo']['host']
         MONGODB_PORT = sec['mongo']['port']
-    if settings.payment_enabled:
+    # -- oauth --
+    OAUTHS = {}
+    if 'oauth' in sec:
+        if 'twitter' in sec['oauth']:
+            OAUTHS['twitter'] = {
+                'id': sec['oauth']['twitter']['key'],
+                'secret': sec['oauth']['twitter']['secret']
+            }
+        if 'facebook' in sec['oauth']:
+            OAUTHS['facebook'] = {
+                'id': sec['oauth']['facebook']['key'],
+                'secret': sec['oauth']['facebook']['secret']
+            }
+    # -- payment --
+    if settings.payment:
         STRIPE_SECRET = sec['stripe']['secret']
         STRIPE_PUBLIC = sec['stripe']['public']

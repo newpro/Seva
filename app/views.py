@@ -52,14 +52,14 @@ def playground():
 
 # ---- OAuths Views ----
 from oauths import OAuthBase
-@app.route('/oauth/<provider>')
+@app.route('/oauth/provider/<provider>')
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
     oauth = OAuthBase.get_provider(provider)
     return oauth.authorize()
 
-@app.route('/callback/<provider>')
+@app.route('/oauth/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
@@ -78,7 +78,7 @@ def oauth_callback(provider):
     login_user(user, remember=form.remember.data)
     return redirect(url_for('index'))
 
-@app.route('/oauth_finish', methods=['POST', 'GET'])
+@app.route('/oauth/finish', methods=['POST', 'GET'])
 def oauth_finish():
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
