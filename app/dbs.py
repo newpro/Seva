@@ -207,17 +207,10 @@ class User(db.Model, UserMixin):
         """
         Add one role without hierarchy check
         """
-        if ref: # if role is an object
-            role_ref = role
-        else: # role is a string
-            role_ref = fetch('role', role)
-        if not role_ref:
-            raise Exception('Role not exists')
-        if self.has_role(role_ref, ref=True):
-            print '--- Warning: role "{}" already exists, ignored ---'.format(role_ref.name)
-            return
-        self.roles.append(role_ref)
-        util.commit()
+        if ref:
+            _add_to_secondary(self.roles, role)
+        else:
+            _add_to_secondary(self.roles, role, fetch_table='role')
 
     # ---- Social Helpers ----
     def has_social_provider(self, provider, ref=False):
@@ -227,16 +220,9 @@ class User(db.Model, UserMixin):
 
     def add_social(self, provider, ref=False):
         if ref:
-            provider_ref = provider
+            _add_to_secondary(self.social, provider)
         else:
-            provider_ref = fetch('provider', provider)
-        if not provider_ref:
-            raise Exception('Provide does not exists')
-        if self.has_social_provider(provider_ref, ref=True):
-            print '--- Warning: social provider "{}" already in user, ignored ---'.format(provider_ref.name)
-            return
-        self.social.append(provider_ref)
-        util.commit()
+            _add_to_secondary(self.social, provider, fetch_table='provider')
 
     # ---- Payment Helpers ----
     def get_stripe(self):
@@ -423,6 +409,26 @@ def fetch(column, index):
     else:
         raise Exception('Column not recognizable')
     return _db.query.filter(field==index).first()
+
+def _add_to_secondary(secondary, data, fetch_table=False):
+    """
+    add the data to secondary
+
+    Param:
+    * ref: Can be False, or a string for table fetch
+    """
+    # -- fetch the data object, if necessary --
+    if not fetch_table: # if data is an object
+        data_ref = data
+    else: # data is a string
+        data_ref = fetch(fetch_table, data)
+    if not data_ref:
+        raise Exception('Data not exists')
+    # -- check if already in --
+    if data_ref in secondary.all():
+        print '--- Warning: data "{}" already exists, ignored ---'.format(data_ref.id)
+    secondary.append(data_ref)
+    util.commit()
 
 # -- Validators --
 def exists_or_exception(column, index):
