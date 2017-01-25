@@ -2,7 +2,7 @@ from flask import render_template, request, url_for, current_app, redirect, flas
 from flask_user import login_required, roles_required, current_user
 from . import app, dbs, db, forms, db_util
 from flask_s3 import create_all
-from flask_login import login_user
+from flask_login import login_user, logout_user
 import uuid
 
 # ---- Management Views ----
@@ -22,7 +22,7 @@ class AdminView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
-        return redirect(url_for('user/login', next=request.url))
+        return redirect(url_for('user.login', next=request.url))
 
 class UserAdmin(AdminView):
     column_exclude_list = column_restrictions['User']
@@ -34,6 +34,7 @@ admin.add_view(UserAdmin(dbs.User, db.session))
 admin.add_view(AdminView(dbs.Role, db.session))
 
 @app.route('/upload', methods=['POST', 'GET'])
+@roles_required('admin')
 def upload_all():
     form = forms.UploadAll()
     if form.validate_on_submit():
@@ -44,17 +45,26 @@ def upload_all():
 # ---- Non-Management Views ----
 @app.route('/')
 def index():
-    return 'ONLINE'
+    return render_template('main/index.html')
 
 @app.route('/playground')
+@roles_required('admin')
 def playground():
     return render_template('playground/index.html')
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash('Logout Complete', category='info')
+    return redirect(url_for('index'))
 
 # ---- OAuths Views ----
 from oauths import OAuthBase
 @app.route('/oauth/provider/<provider>')
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
+        flash('Already login', category='warning')
         return redirect(url_for('index'))
     oauth = OAuthBase.get_provider(provider)
     return oauth.authorize()
@@ -62,11 +72,12 @@ def oauth_authorize(provider):
 @app.route('/oauth/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
+        flash('Already login', category='warning')
         return redirect(url_for('index'))
     oauth = OAuthBase.get_provider(provider)
     social_id, username, email = oauth.callback()
     if social_id is None:
-        flash('Authentication failed.')
+        flash('Authentication failed', category='danger')
         return redirect(url_for('index'))
     user = dbs.User.query.filter_by(social_id=social_id).first()
     if not user:
@@ -76,11 +87,13 @@ def oauth_callback(provider):
         form.provider.data = provider
         return render_template('soc_user/finish.html', form=form, provider=provider)
     login_user(user, remember=form.remember.data)
+    flash('Oauth Success', category='success')
     return redirect(url_for('index'))
 
 @app.route('/oauth/finish', methods=['POST', 'GET'])
 def oauth_finish():
     if not current_user.is_anonymous:
+        flash('Already registered', category='warning')
         return redirect(url_for('index'))
     form = forms.SocialRegister()
     if request.method == 'POST' and form.validate():
@@ -90,6 +103,7 @@ def oauth_finish():
         user.add_social(form.provider.data)
         flash('Register success!')
         login_user(user, remember=form.remember.data)
+        flash('New User Login Success', category='success')
         return redirect(url_for('index'))
     return render_template('soc_user/finish.html', form=form, provider=provider)
 
@@ -165,6 +179,8 @@ def stripe_quickcharge():
                             customer_id=current_user.id,
                             product_id=product.id).pip()
     dbs.Delivery(purchase=purchase)
+    # CRUMB: add post purchase operations
+    flash('stripe quickcharge complete', category='success')
     return redirect(url_for('index'))
 
 @app.route('/stripe/charge', methods=['POST'])
@@ -250,4 +266,5 @@ def stripe_charge():
                             product_id=product.id).pip()
     dbs.Delivery(purchase=purchase)
     # CRUMB: add post purchase operations
+    flash('stripe charge complete', category='success')
     return redirect(url_for('index'))
