@@ -192,6 +192,15 @@ class User(db.Model, UserMixin):
             role = fetch('role', role)
         return role in self.roles.all()
 
+    def has_any_role(self, roles, ref=False):
+        """
+        Give a list of roles, check if it has any of the role
+        """
+        for role in roles:
+            if self.has_role(role, ref=ref):
+                return True
+        return False
+
     def add_role(self, role_name):
         """
         Add the role and all roles lower than it
