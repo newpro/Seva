@@ -5,6 +5,7 @@ app = Flask(__name__)
 import os
 try:
     RUNTIME = os.environ['RUNTIME']
+    app.config['RUNTIME'] = RUNTIME
 except:
     raise Exception('Environmental variable "RUNTIME" has not been set')
 
@@ -36,14 +37,21 @@ s3.init_app(app)
 # ---- load mongo support ----
 if app.config['MONGODB_HOST']:
     from pymongo import MongoClient
-    app.mongo = MongoClient(app.config['MONGODB_HOST'], app.config['MONGODB_PORT'])['social']
+    app.mongo = MongoClient(app.config['MONGODB_HOST'],
+                            app.config['MONGODB_PORT'])[app.config['USER_APP_NAME']]
+# ---- load stripe support ----
+import stripe
+if app.config['PAYMENT_ENABLED']:
+    stripe.api_key = app.config['STRIPE_SECRET']
 
 # -- Pre operations --
 @app.before_first_request
 def setup(*args, **kwargs):
     if app.config['RESET_DB']:
         from utilities import Preload
-        preload = Preload(db_schema=dbs, fire_schema=firedbs, db_util=db_util)
+        preload = Preload(db_schema=dbs,
+                          fire_schema=firedbs,
+                          db_util=db_util)
         preload.reset_db(relational=False, realtime=False)
 
 # -- Views --

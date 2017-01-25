@@ -20,7 +20,7 @@ class Config(object):
         if 'region' in g['aws']:
             FLASKS3_REGION = g['aws']['region']
 
-    # --- USER ----
+    # ---- USER ----
     USER_LOGIN_TEMPLATE = 'flask_user/login_or_register.html'
     USER_REGISTER_TEMPLATE = 'flask_user/login_or_register.html'
     STORE_USER = settings.store_user
@@ -36,3 +36,8 @@ class Config(object):
                 'id': g['oauth']['facebook']['key'],
                 'secret': g['oauth']['facebook']['secret']
             }
+    # ---- Payment ----
+    if settings.payment_enabled:
+        PAYMENT_ENABLED = True
+        CURRENCY = settings.payment_currency
+        STORE_PAYMENT = settings.store_payment

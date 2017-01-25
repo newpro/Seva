@@ -17,7 +17,7 @@ role_hierarchys = db.Table('role_hierarchy',
 social_logins = db.Table('social_login',
     db.Column('index', db.Integer, primary_key=True),
     db.Column('user_fk', db.Integer, db.ForeignKey('user.id')),
-    db.Column('soc_id', db.Integer, db.ForeignKey('social.id'))
+    db.Column('soc_fk', db.Integer, db.ForeignKey('social.id'))
 )
 
 # ---- Tables ----
@@ -80,6 +80,33 @@ class SocialPlatform(db.Model):
         self.add()
         return self
 
+class Address(db.Model):
+    """
+    User Address, cleaned by stripe
+
+    Core idea: 
+
+    * Record first time made a purchase
+    * Update every purchase if there is a change
+    """
+    __tablename__ = 'address'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # ---- billing ----
+    bill_name = db.Column(db.String, nullable=True)
+    bill_address = db.Column(db.String, nullable=True)
+    bill_zip = db.Column(db.String, nullable=True)
+    bill_state = db.Column(db.String, nullable=True)
+    bill_city = db.Column(db.String, nullable=True)
+    bill_country = db.Column(db.String, nullable=True)
+    # ---- shipping ----
+    ship_name = db.Column(db.String, nullable=True)
+    ship_address = db.Column(db.String, nullable=True)
+    ship_zip = db.Column(db.String, nullable=True)
+    ship_state = db.Column(db.String, nullable=True)
+    ship_city = db.Column(db.String, nullable=True)
+    ship_country = db.Column(db.String, nullable=True)       
+
 from flask_user import UserMixin
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -93,7 +120,6 @@ class User(db.Model, UserMixin):
     * target: the person's care target, older will be none
     """
     id = db.Column(db.Integer, primary_key=True)
-
     # -- User Authentication information --
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False, default='')
@@ -111,8 +137,11 @@ class User(db.Model, UserMixin):
     social_id = db.Column(db.String(64), nullable=True, unique=True)
 
     # -- Optional field --
-    # CANDY: Optional user fields
     profile_url = db.Column(db.String(200), nullable=False, default='')
+    stripe_customer_id = db.Column(db.String, nullable=True) # quick charge support
+    # -- shipment --
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'), nullable=True) # allow null
+    address = relationship(Address, uselist=False) # one to one
 
     # -- Relationships --
     roles = relationship("Role",
@@ -143,15 +172,14 @@ class User(db.Model, UserMixin):
     def is_active(self):
         return self.is_enabled
 
+    def verify_password(self, hashcode):
+        return user_manager.verify_password(hashcode, self)
+
+    # ---- Role Helpers ----
     def has_role(self, role, ref=False):
         if not ref:
             role = fetch('role', role)
         return role in self.roles.all()
-
-    def has_social_provider(self, provider, ref=False):
-        if not ref:
-            provider = fetch('provider', provider)
-        return provider in self.social.all()
 
     def add_role(self, role_name):
         """
@@ -180,6 +208,12 @@ class User(db.Model, UserMixin):
         self.roles.append(role_ref)
         util.commit()
 
+    # ---- Social Helpers ----
+    def has_social_provider(self, provider, ref=False):
+        if not ref:
+            provider = fetch('provider', provider)
+        return provider in self.social.all()
+
     def add_social(self, provider, ref=False):
         if ref:
             provider_ref = provider
@@ -193,13 +227,156 @@ class User(db.Model, UserMixin):
         self.social.append(provider_ref)
         util.commit()
 
-    def verify_password(self, hashcode):
-        return user_manager.verify_password(hashcode, self)
+    # ---- Payment Helpers ----
+    def get_stripe(self):
+        """
+        check if user already have stripe record
+        
+        if have it, return record. Otherwise return false
+        """
+        if self.stripe_customer_id:
+            return self.stripe_customer_id
+        return False
+
+    def set_stripe(self, customer_id):
+        """
+        setup stripe id
+        """
+        self.stripe_customer_id = customer_id
+        util.commit()
+
+    def set_address(self, ship=None, bill=None):
+        address = {}
+        if bill:
+            address['bill_name'] = bill['name']
+            address['bill_address'] = bill['address']
+            address['bill_zip'] = bill['zip']
+            address['bill_state'] = bill['state']
+            address['bill_city'] = bill['city']
+            address['bill_country'] = bill['country']
+        # ---- shipping ----
+        if ship:
+            address['ship_name'] = ship['name']
+            address['ship_address'] = ship['address']
+            address['ship_zip'] = ship['zip']
+            address['ship_state'] = ship['state']
+            address['ship_city'] = ship['city']
+            address['ship_country'] = ship['country']
+        self.address = Address(**address)
+        util.commit()
 
     def __repr__(self):
         return '<User %r, %r>' % (self.id, self.username)
 
-    # CRUMB: add additional tables here
+app_currency = app.config['CURRENCY']
+class Product(db.Model):
+    """
+    Basic expandable product model
+    
+    The prime focus of this model is to support payment system and admin.
+    
+    U should keeps all fields and expand this. 
+    """
+    __tablename__ = 'product'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    # -- Market info --
+    is_active = db.Column(db.Boolean, default=False)
+    price = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default=app_currency)
+    digital = db.Column(db.Boolean, default=False) # if digital, product does not need to ship
+
+    def __repr__(self):
+        return '<Product %r %r>' % (self.id, self.name)
+    
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+class Purchase(db.Model):
+    __tablename__ = 'purchase'
+
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String, unique=True)
+    mongo_id = db.Column(db.String, unique=True, nullable=True) # if you have mongo, change nullable to false
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product = relationship(Product)
+    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    customer = relationship(User)
+    # -- safty field, return data from stripe --
+    email = db.Column(db.String, nullable=True) # stripe email from stripe, if none, means quickcharge
+
+    def __repr__(self):
+        return '<Purchase id: %r customer: %r, product: %r>' % (self.uuid, self.email, self.product_id)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+class DeliveryState(db.Model):
+    """
+    Delivery record support
+    
+    Record all changes of record state, and who changed it.
+    
+    Map to secondary table.
+    """
+    __tablename__ = 'delivery_state'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    state = db.Column(db.String(10), unique=True, nullable=False)
+
+    def __repr__(self):
+        return '<DeliveryState %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+class Delivery(db.Model):
+    """
+    One to one mapping to purchase table
+    
+    Reason for isolation: different view level for information for service role
+    """
+    __tablename__ = 'delivery'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    # -- record --
+    state = db.Column(db.String, db.ForeignKey('delivery_state.state'), nullable=False, default='purchased')
+    state_ref = relationship(DeliveryState)
+    # -- purchase --
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchase.id'), nullable=False)
+    purchase = relationship(Purchase, uselist=False) # one to one
+
+    def __repr__(self):
+        return '<DeliveryState %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+    
+    def start_delivery(self):
+        """
+        mark this delivery from purchased to dispatched
+        """
+        self.state = 'dispatched'
+        util.commit()
+
+# CRUMB: add additional tables here
 
 # ---- Support ----
 # -- Doggy --
@@ -225,10 +402,13 @@ def fetch(column, index):
     elif column == 'role':
         _db = Role
         field = Role.name
-    # CRUMB: add additional tables for fetching
     elif column == 'provider':
         _db = SocialPlatform
         field = SocialPlatform.name
+    elif column == 'delivery_state':
+        _db = DeliveryState
+        field = DeliveryState.state
+    # CRUMB: add additional tables for fetching
     else:
         raise Exception('Column not recognizable')
     return _db.query.filter(field==index).first()
@@ -258,16 +438,29 @@ def _init_social():
     SocialPlatform(name='twitter', icon='twitter-square').add()
     SocialPlatform(name='facebook', icon='facebook-square').add()
 
+def _init_delivery_state():
+    purchase_state = DeliveryState(state='purchased').pip()
+    dispatched_state = DeliveryState(state='dispatched').pip()
+
 def _init_data():
+    # ---- User Tests ----
     User(username='user_test', email='user1@email.com', active=True,
-         password = '007', first_name = 'duck', last_name = 'mcgill', is_enabled=True).pip().add_role('user')
+         password = '007', first_name = 'duck', last_name = 'mcgill',
+         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
+
     User(username='service_test', email='service1@email.com', active=True,
-         password = '007', first_name = 'goose', last_name = 'abilio', is_enabled=True).pip().add_role('service')
+         password = '007', first_name = 'goose', last_name = 'abilio',
+         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('service')
+
     admin_test = User(username='admin_test', email='admin1@email.com', active=True,
                       password = '007', first_name = 'sponge', last_name = 'bob',
                       is_enabled=True, confirmed_at=datetime.now()).pip()
     admin_test.add_role('admin')
     admin_test.add_social('facebook')
+
+    # ---- Product Tests ----
+    watch = Product(name='watch_test', price=123.45, is_active=True).pip()
+
     # CANDY: add additional user for roles here
     # CRUMB: add additional table tests here
 
@@ -275,8 +468,10 @@ def _RESET_DB():
     # -- reset in dependency order --
     util.reset()
     _init_social()
+    _init_delivery_state()
     _init_roles()
-    _init_data()
+    if app.config['RUNTIME'] != 'production':
+        _init_data()
 
 # ---- DB setups ----
 from flask_user import SQLAlchemyAdapter, UserManager

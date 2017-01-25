@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <form action="{{ url_for('stripe_charge') }}" method="POST">
+      <script
+        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="{{ key }}"
+        data-amount="{{ product.amount | e }}"
+        data-name="{{ product.store | e }}"
+        data-description="{{ product.name | e }}"
+        data-image= "{% if product.image %}{{ product.image }}{% else %}https://stripe.com/img/documentation/checkout/marketplace.png{% endif %}"
+        data-locale="auto",
+        data-zip-code=true,
+        data-currency="{{ product.currency | e }}",
+        {% if user_email %}data-email={{ user_email }},{% endif %}
+        data-billing-address=true,
+        data-shipping-address={% if product.digital %}false{% else %}true{% endif %}>
+      </script>
+      <input type="hidden" name="product_id" value="{{ product.id }}" />
+    </form>
+
+    {% if current_user.stripe_customer_id %}
+    {% from "macro/bootstrap/components/_form.html" import fieldset %}
+    <form action="{{ url_for('stripe_quickcharge') }}" method="POST">
+      {{ fieldset(qc_form, title='stripe_quickcharge') }}
+    </form>
+    {% endif %}
+</body>
+</html>

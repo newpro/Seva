@@ -18,3 +18,6 @@ class ProductionConfig(Config):
     if settings.store_user:
         MONGODB_HOST = sec['mongo']['host']
         MONGODB_PORT = sec['mongo']['port']
+    if settings.payment_enabled:
+        STRIPE_SECRET = sec['stripe']['secret']
+        STRIPE_PUBLIC = sec['stripe']['public']

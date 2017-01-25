@@ -12,6 +12,9 @@ pymongo
 flask_wtf
 wtforms
 
+# payment
+stripe
+
 # uploads
 flask_uploads
 

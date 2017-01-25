@@ -14,3 +14,10 @@ s3_caching = False
 # Store user details to Mongo db everytime a new user login via social platforms
 # If true, additional Mongo db connection has to be set in secrets
 store_user = True
+
+# Charging currency
+# Depend on countries, check out stripe guideline: 
+# https://support.stripe.com/questions/which-currencies-does-stripe-support#supportedcurrencies
+payment_enabled = True
+payment_currency = 'cad'
+store_payment = True

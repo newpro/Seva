@@ -91,4 +91,7 @@ class SocialRegister(FlaskForm):
     last_name = TextField('Optional, last name')
     remember = BooleanField('Remember me')
 
+class QuickCharge(FlaskForm):
+    product_id = HiddenField()
+
 # CRUMBS: add your forms here
