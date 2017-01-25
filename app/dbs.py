@@ -105,7 +105,18 @@ class Address(db.Model):
     ship_zip = db.Column(db.String, nullable=True)
     ship_state = db.Column(db.String, nullable=True)
     ship_city = db.Column(db.String, nullable=True)
-    ship_country = db.Column(db.String, nullable=True)       
+    ship_country = db.Column(db.String, nullable=True)
+
+    # -- Helpers --
+    def __repr__(self):
+        return '<Address %r>' % (self.id)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
 
 from flask_user import UserMixin
 class User(db.Model, UserMixin):

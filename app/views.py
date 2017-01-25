@@ -29,7 +29,7 @@ class UserAdmin(AdminView):
     form_excluded_columns = column_restrictions['User']
 
 # -- load management views --
-admin = Admin(app, name='flaskboost', template_mode='bootstrap3')
+admin = Admin(app, name=app.config['USER_APP_NAME'], template_mode='bootstrap3')
 admin.add_view(UserAdmin(dbs.User, db.session))
 admin.add_view(AdminView(dbs.Role, db.session))
 
