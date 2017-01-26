@@ -134,7 +134,7 @@ class User(db.Model, UserMixin):
     # -- User Authentication information --
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False, default='')
-    create_at = db.Column(db.DateTime, onupdate=datetime.now)
+    create_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=datetime.now)
     reset_password_token = db.Column(db.String(100), nullable=False, default='')
 
     # -- User Email information --

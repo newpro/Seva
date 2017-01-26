@@ -32,6 +32,9 @@ class UserAdmin(AdminView):
 admin = Admin(app, name=app.config['USER_APP_NAME'], template_mode='bootstrap3')
 admin.add_view(UserAdmin(dbs.User, db.session))
 admin.add_view(AdminView(dbs.Role, db.session))
+admin.add_view(AdminView(dbs.Purchase, db.session))
+admin.add_view(AdminView(dbs.Delivery, db.session))
+admin.add_view(AdminView(dbs.Product, db.session))
 
 @app.route('/upload', methods=['POST', 'GET'])
 @roles_required('admin')
@@ -178,7 +181,7 @@ def stripe_quickcharge():
                             mongo_id=mongo_id,
                             customer_id=current_user.id,
                             product_id=product.id).pip()
-    dbs.Delivery(purchase=purchase)
+    dbs.Delivery(purchase=purchase).add()
     # CRUMB: add post purchase operations
     flash('stripe quickcharge complete', category='success')
     return redirect(url_for('index'))
@@ -264,7 +267,7 @@ def stripe_charge():
                             mongo_id=mongo_id,
                             customer_id=current_user.id,
                             product_id=product.id).pip()
-    dbs.Delivery(purchase=purchase)
+    dbs.Delivery(purchase=purchase).add()
     # CRUMB: add post purchase operations
     flash('stripe charge complete', category='success')
     return redirect(url_for('index'))

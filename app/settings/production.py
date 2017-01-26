@@ -22,8 +22,8 @@ class ProductionConfig(Config):
         MONGODB_HOST = sec['mongo']['host']
         MONGODB_PORT = sec['mongo']['port']
     # -- oauth --
-    OAUTHS = {}
     if 'oauth' in sec:
+        OAUTHS = {}
         if 'twitter' in sec['oauth']:
             OAUTHS['twitter'] = {
                 'id': sec['oauth']['twitter']['key'],

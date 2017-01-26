@@ -4,6 +4,7 @@ from secret import global_ as g
 class Config(object):
     DEBUG = False
     USER_APP_NAME = settings.app_name
+    CSRF_ENABLED = True
     RESET_DB = settings.reset_db
     SQLALCHEMY_TRACK_MODIFICATIONS = True # SQL debug printout
     FLASKS3_ONLY_MODIFIED = True # only upload modified
