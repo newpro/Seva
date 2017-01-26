@@ -4,6 +4,9 @@ app_name = 'flaskboost'
 # Safeguard for reset db (relational and realtime) or not. False can guard against dev mistake to erase data in production server
 reset_db = True
 
+# log sql operations
+sql_echo = True
+
 # Force to serve remote s3 in development for testing propose
 s3_forceserve = False
 

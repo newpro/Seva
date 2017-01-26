@@ -2,7 +2,7 @@
 
 All in one solution for flask development
 
-## Build in Features
+## Build-in Features
 
 * User Management
 	* Role System
@@ -23,7 +23,13 @@ All in one solution for flask development
 	* S3
 * Build in CSRF
 
-## We need help!
+## How To Play
+
+* Create and fill in settings/secret.py file, with the format from secret_format.py in same folder
+* Disable any features that u do not need in settings/settings.py
+* Start to play!
+
+## We Need HELP!
 
 Current version is unstable
 

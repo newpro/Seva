@@ -7,7 +7,7 @@ try:
     RUNTIME = os.environ['RUNTIME']
     app.config['RUNTIME'] = RUNTIME
 except:
-    raise Exception('Environmental variable "RUNTIME" has not been set')
+    raise Exception('Environmental variable "RUNTIME" has not been set (try export RUNTIME="development")')
 
 if RUNTIME == 'development':
     from settings import development

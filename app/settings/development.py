@@ -7,7 +7,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     if settings.s3_forceserve:
         FLASKS3_DEBUG = True # force serving s3
-    SQLALCHEMY_ECHO = True # Log any sqlalchemy error
+    SQLALCHEMY_ECHO = settings.sql_echo # Log any sqlalchemy error
     SECRET_KEY = sec['secret']
     # -- DB --
     if 'url' in sec['db']:
