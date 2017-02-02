@@ -1,0 +1,8 @@
+{
+  "name": "Flaskboost",
+  "description": "flaskboost heroku demo site",
+  "image": "heroku/python",
+  "repository": "https://github.com/newpro/flaskboost",
+  "keywords": ["python", "flask" ],
+  "addons": [ "heroku-postgresql" ]
+}

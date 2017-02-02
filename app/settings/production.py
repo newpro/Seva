@@ -1,12 +1,13 @@
 from basic import Config
+import settings
 from secret import remote as sec
 
 class ProductionConfig(Config):
     # -- basic --
     DEBUG = False
-    SECRET_KEY = sec.remote_secret
+    SECRET_KEY = sec['secret']
     # -- DB --
-    if sec['db']['url']:
+    if 'url' in sec['db']:
         SQLALCHEMY_DATABASE_URI = sec['db']['url']
     else:
         SQLALCHEMY_DATABASE_URI = ('postgresql://{}:{}@{}/{}').format(sec['db']['user'],

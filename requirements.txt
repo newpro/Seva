@@ -24,7 +24,7 @@ flask_uploads
 
 # db
 flask_sqlalchemy
-#psycopg2
+psycopg2
 
 # management
 flask_admin
@@ -35,3 +35,6 @@ twilio
 
 # firebase
 pyrebase
+
+# heroku
+gunicorn
