@@ -20,6 +20,12 @@ social_logins = db.Table('social_login',
     db.Column('soc_fk', db.Integer, db.ForeignKey('social.id'))
 )
 
+chat_clients = db.Table('chat_client',
+    db.Column('index', db.Integer, primary_key=True),
+    db.Column('user_fk', db.Integer, db.ForeignKey('user.id')),
+    db.Column('chat_fk', db.Integer, db.ForeignKey('chat.id'))
+)
+
 # ---- Tables ----
 class Role(db.Model):
     __tablename__ = 'role'
@@ -72,6 +78,26 @@ class SocialPlatform(db.Model):
     # -- Helpers --
     def __repr__(self):
         return '<Role %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+class Chat(db.Model):
+    __tablename__ = 'chat'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    title = db.Column(db.String(25), unique=True, nullable=True)
+    clients = relationship("User",
+                           secondary=chat_clients,
+                           lazy='dynamic')
+
+    # -- Helpers --
+    def __repr__(self):
+        return '<Chat id: %r, %r>' % (self.id, self.title)
 
     def add(self):
         util.add(self)
@@ -163,6 +189,10 @@ class User(db.Model, UserMixin):
                          secondary=social_logins,
                          lazy='dynamic')
 
+    chats = relationship("Chat",
+                         secondary=chat_clients,
+                         lazy='dynamic')
+
     # -- Column overwrite --
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
@@ -233,6 +263,12 @@ class User(db.Model, UserMixin):
         else:
             _add_to_secondary(self.social, provider, fetch_table='provider')
 
+    def add_chat(self, chat, ref=False):
+        if ref:
+            _add_to_secondary(self.social, chat)
+        else:
+            _add_to_secondary(self.social, chat, fetch_table='chat')
+
     # ---- Payment Helpers ----
     def get_stripe(self):
         """
@@ -270,6 +306,9 @@ class User(db.Model, UserMixin):
             address['ship_country'] = ship['country']
         self.address = Address(**address)
         util.commit()
+
+    def get_video_room(self):
+        return "1"
 
     def __repr__(self):
         return '<User %r, %r>' % (self.id, self.username)
@@ -414,6 +453,9 @@ def fetch(column, index):
     elif column == 'delivery_state':
         _db = DeliveryState
         field = DeliveryState.state
+    elif column == 'chat':
+        _db = Chat
+        field = Chat.id
     # CRUMB: add additional tables for fetching
     else:
         raise Exception('Column not recognizable')
@@ -470,8 +512,12 @@ def _init_delivery_state():
 
 def _init_data():
     # ---- User Tests ----
-    User(username='user_test', email='user1@email.com', active=True,
-         password = '007', first_name = 'duck', last_name = 'mcgill',
+    User(username='user1', email='user1@email.com', active=True,
+         password = '007', first_name = 'duck1', last_name = 'mcgill1',
+         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
+
+    User(username='user2', email='user2@email.com', active=True,
+         password = '007', first_name = 'duck2', last_name = 'mcgill2',
          is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
 
     User(username='service_test', email='service1@email.com', active=True,

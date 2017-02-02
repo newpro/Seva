@@ -1,0 +1,36 @@
+{% extends "frame/bootstrap.html" %}
+{# normally for a firebase project, need bootstrap to be pretty #}
+
+{% block title %}Firebase Frame{% endblock %}
+
+{% block js %}
+{{ super() }}
+<!-- data injection and control  -->
+<script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+<script>
+  /*
+    Receive whatever injected from server views
+
+    Payload list:
+    * current_user: data for current_user
+    * ref: data injection point
+  */
+  var viewData = {{ injection|tojson|safe }};
+  var enables = { drawpad: true, };
+</script>
+<!-- React listener -->
+<script src="https://fb.me/react-15.3.0.min.js"></script>
+<script src="https://fb.me/react-dom-15.3.0.min.js"></script>
+
+<!-- ReactFire -->
+<script src="https://cdn.firebase.com/libs/reactfire/1.0.0/reactfire.min.js"></script>
+<script src="https://unpkg.com/throw-in-the-towel@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/radium/0.18.1/radium.min.js"></script>
+<script type="text/babel" src="{{ url_for('static', filename='js/chat_react.js')}}"></script>
+{% endblock %}
+
+{% block content %} {# suppress jumbotron #}
+<div class="col-sm-6 middle-chat" id="auto_scroll">
+    <div id="target"></div>
+</div>
+{% endblock %}

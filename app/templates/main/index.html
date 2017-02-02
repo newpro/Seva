@@ -12,6 +12,8 @@
   {% endif %}
 {% endwith %}
 
+<p>Runtime: {{ runtime }}</p>
+
 {% if current_user.is_authenticated %}
 <p><h2>Welcome {{ current_user.username }}</h2></p>
 <p><a class="btn btn-primary" href="{{ url_for('logout') }}" role="button">Logout</a></p>

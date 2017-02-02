@@ -7,7 +7,4 @@ gulp.task('less', function() {
     return gulp.src('static/src/*.less')
         .pipe(less())
         .pipe(gulp.dest('static/compiled'))
-        .pipe(browserSync.reload({
-            stream: true
-        }))
 });

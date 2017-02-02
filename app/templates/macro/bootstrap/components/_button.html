@@ -1,0 +1,7 @@
+{# http://bootsnipp.com/snippets/featured/attractive-round-cornered-button-with-icons #}
+{# Styles: primary, success, info, warning, danger, muted, default #}
+{% macro button(message, button_style = 'primary', text_style='primary', gly='save') -%}
+  <a class="btn icon-btn btn-{{ button_style }}" style="padding: 1px 15px 3px 2px; border-radius:50px;" href="#">
+    <span class="glyphicon btn-glyphicon glyphicon-{{ gly }} img-circle text-{{ text_style }}" style="padding:8px; background:#ffffff; margin-right:4px;"></span>{{ message }}
+  </a>
+{%- endmacro %}

@@ -3,6 +3,10 @@ flask
 gcloud
 protobuf==3.1.0 # fixed for pyrebase incompatability with python 2.7
 
+# jwt support
+python_jwt
+pycrypto
+
 # user
 flask_user
 rauth
@@ -26,6 +30,8 @@ flask_sqlalchemy
 flask_admin
 flask_s3
 
+# sms, video
+twilio
+
 # firebase
 pyrebase
-jwt # tmp fix, break dependency

@@ -4,6 +4,9 @@ app_name = 'flaskboost'
 # Safeguard for reset db (relational and realtime) or not. False can guard against dev mistake to erase data in production server
 reset_db = True
 
+# Enable firebase support
+firebase = True
+
 # log sql operations
 sql_echo = True
 
@@ -21,9 +24,12 @@ mongo = True
 # If true, additional Mongo db connection has to be set in secrets
 store_user = True
 
-# Charging currency
+# Enable Payment system
+payment = True
 # Depend on countries, check out stripe guideline: 
 # https://support.stripe.com/questions/which-currencies-does-stripe-support#supportedcurrencies
-payment = True
 payment_currency = 'cad'
 store_payment = True
+
+# Enable Twilio support
+twilio = True

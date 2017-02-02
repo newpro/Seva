@@ -1,0 +1,34 @@
+{% extends "frame/bootstrap.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='compiled/video_native.css') }}">
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+<script src="//media.twiliocdn.com/sdk/js/video/releases/1.0.0-beta2/twilio-video.js"></script>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+{% endblock %}
+
+{% block jumbotron_content %}
+
+<h1>Video</h1>
+
+<div id="remote-media"></div>
+<div id="controls">
+  <div id="preview">
+    <p class="instructions">instructions</p>
+    <div id="local-media"></div>
+    <button id="button-preview">Preview My Camera</button>
+  </div>
+  <div id="room-controls">
+    <p class="instructions">Room Name:</p>
+    <input id="room-name" type="text" placeholder="Enter a room name" />
+    <button id="button-join">Join Room</button>
+    <button id="button-leave">Leave Room</button>
+  </div>
+  <div id="log"></div>
+</div>
+
+{% endblock %}

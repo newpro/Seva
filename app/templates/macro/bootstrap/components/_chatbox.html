@@ -1,0 +1,54 @@
+{% macro chatbox_group(current_user) -%}
+{# dependency: css #}
+<div class="container">
+    <!-- <div id='some-element'></div> -->
+    <h1>head</h1>
+    <div class="row container">
+        <div class="col-sm-3 middle-container">
+            <div class="card middle-inner">
+                <div class="header-bg" width="250" height="70"></div>
+                <div class="avatar">
+                    <img src="" alt="" />
+                </div>
+                <div class="content">
+                    <p> firstname <br>
+                        institution
+                    </p>
+                    roles
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 middle-chat" id="auto_scroll">
+            <div id="firebase_inject"></div>
+        </div>
+        <div class="col-sm-3 middle-container">
+            <div class="card middle-inner">
+                <div class="header-bg" width="250" height="70"></div>
+                <div class="avatar">
+                    <img src="" alt="" />
+                </div>
+                <div class="content">
+                    <p> {{ current_user.first_name}} {{ current_user.last_name}} <br>
+                        institution
+                    </p>
+                    {% for role in current_user.roles %}
+                    <p class="user-roles">
+                        <span class="fa-stack fa-lg">
+                        <i class="fa fa-circle fa-stack-2x" style="color: #{{ role.color }}; filter: invert(100%);"></i>
+                        <i class="fa fa-{{ role.icon }} fa-stack-1x" style="color: #{{ role.color }}"></i>
+                        </span> {{ role.name | capitalize }}
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%- endmacro %}
+
+{% macro chatbox(current_user) -%}
+{# dependency: auto_scroll.js #}
+<div class="middle-chat" id="auto_scroll" style="height: 100%; overflow: scroll;">
+    <div id="firebase_inject"></div>
+</div>
+{%- endmacro %}

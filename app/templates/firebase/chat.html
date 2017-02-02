@@ -1,0 +1,76 @@
+{% extends "frame/firebase.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block js %}
+{{ super() }}
+<!-- general -->
+<link rel="stylesheet/less" type="text/css" href="{{ url_for('static', filename='src/video_native.less') }}">
+<link rel="stylesheet/less" type="text/css" href="{{ url_for('static', filename='src/video_mix.less')}}" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
+<script src="{{ url_for('static', filename='js/sketchpad.js')}}"></script>
+<!-- twilio video -->
+<script src="//media.twiliocdn.com/sdk/js/video/releases/1.0.0-beta2/twilio-video.js"></script>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+{% endblock %}
+
+{% block content %} {# suppress jumbotron #}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-2" style="border-style: solid;">
+      <div class="left-column">
+        left-column
+        {% from "macro/bootstrap/components/_button.html" import button %}
+        {{ button('message') }}
+      </div>
+    </div>
+    <!-- Video -->
+    <div class="col-md-5" style="border-style: solid;">
+      <div class="video-chat">
+        <!-- videos -->
+        <div id="party">
+          <div class="round-cropper" id="video4"></div>
+          <div class="round-cropper" id="video3"></div>
+          <div class="round-cropper" id="video2"></div>
+          <div class="round-cropper" id="video1"></div>
+        </div>
+        <div id="controls">
+          <div id="preview">
+            <p class="instructions">Mirror</p>
+            <div id="local-media"></div>
+            <button id="button-preview">Preview My Camera</button>
+          </div>
+          <div id="room-controls">
+            <p class="instructions">Room Management:</p>
+            <!-- <input id="room-name" type="text" placeholder="Enter a room name" /> -->
+            <button id="button-join">Join Room</button>
+            <button id="button-leave">Leave Room</button>
+          </div>
+          <div id="log"></div>
+        </div>
+
+      </div>
+    </div>
+    <!-- Drawpad-->
+    <div class="col-md-5" style="border-style: solid;">
+      <div class="info-container">
+        <div class="drawpad">
+          <canvas id="sketchpad" style="border:3px solid green;"></canvas>
+          <div class="btns">
+    				<div id="animate" type="button" class="btn btn-default">animate</div>
+    				<div id="undo" type="button" class="btn btn-default"><-</div>
+    				<div id="redo" type="button" class="btn btn-default">-></div>
+            <input class="btn btn-default upload-button" type="button" value="Upload Floorplan">
+          </div>
+        </div>
+        <div class="message-board">
+          {% from "macro/bootstrap/components/_chatbox.html" import chatbox %}
+          {{ chatbox( current_user ) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

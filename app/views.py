@@ -1,9 +1,49 @@
-from flask import render_template, request, url_for, current_app, redirect, flash, abort
+from flask import render_template, request, url_for, current_app, redirect, flash, abort, jsonify
+from flask.views import MethodView
 from flask_user import login_required, roles_required, current_user
-from . import app, dbs, db, forms, db_util
+from . import app, dbs, db, forms, db_util, firedbs
 from flask_s3 import create_all
 from flask_login import login_user, logout_user
 import uuid
+from twilio.access_token import AccessToken as TAccessToken, VideoGrant
+# -- jwt support --
+from python_jwt import generate_jwt
+import Crypto.PublicKey.RSA as RSA
+import datetime
+import json
+
+# ---- Helper functions ----
+def build_jwt(iss, sub, uid, aud, claims, private_key, encrption_method="RS256", exp_min=60):
+    """
+    Function for create general JWT token, read:
+
+    * w3c JWT: https://www.w3.org/TR/webcrypto-usecases/
+    * py-jwt: https://jwt.io/
+    """
+    try:
+        payload = {
+            "iss": iss,
+            "sub": sub,
+            "aud": aud,
+            "uid": uid,
+            "claims": claims
+        }
+        exp = datetime.timedelta(minutes=exp_min)
+        return generate_jwt(payload, RSA.importKey(private_key), encrption_method, exp)
+    except Exception as e:
+        raise Exception("JWT: Error creating custom token: {}".format(e.message))
+
+def dump_user(user):
+    """
+    dump data of current_user to view
+    """
+    return {'username': user.username,
+            'email': user.email,
+            'roles': [{'name': x.name,
+                       'color': x.color,
+                       'icon': x.icon
+                       } for x in user.roles]
+            }
 
 # ---- Management Views ----
 from flask_admin import Admin
@@ -12,6 +52,7 @@ from flask_admin.contrib.sqla import ModelView
 column_restrictions = {
     'User': ('password', 'reset_password_token', ),
 }
+
 class AdminView(ModelView):
     column_auto_select_related = True
 
@@ -48,7 +89,7 @@ def upload_all():
 # ---- Non-Management Views ----
 @app.route('/')
 def index():
-    return render_template('main/index.html')
+    return render_template('main/index.html', runtime=app.config['RUNTIME'])
 
 @app.route('/playground')
 @roles_required('admin')
@@ -271,3 +312,84 @@ def stripe_charge():
     # CRUMB: add post purchase operations
     flash('stripe charge complete', category='success')
     return redirect(url_for('index'))
+
+# ---- JWT Acquire ----
+@app.route('/jwt/<party>', methods=['GET'])
+@login_required # thrird party normally have services that might cost u (like get video call)
+def jwt_token(party):   
+    if party == 'twilio':
+        # twilio reference: https://github.com/TwilioDevEd/video-quickstart-python
+        # Create an Access Token
+        token = TAccessToken(app.config['TWILIO_ACCOUNT_SID'],
+                             app.config['TWILIO_API_KEY'],
+                             app.config['TWILIO_API_SECRET'])
+        # Set the Identity of this token
+        token.identity = current_user.username
+        # Grant access to Video
+        grant = VideoGrant()
+        grant.configuration_profile_sid = app.config['TWILIO_CONFIGURATION_SID']
+        token.add_grant(grant)
+        # Return token info as JSON
+        return jsonify(identity=token.identity,
+                       token=token.to_jwt())
+    elif party == 'firebase':
+        # firebase reference: https://firebase.google.com/docs/auth/admin/create-custom-tokens
+        service_account = app.config['FIREBASE_SERVICE_ACCOUNT']
+        private_key = app.config['FIREBASE_PRIVATE_KEY']
+        return jsonify(api=app.config['FIREBASE_API'],
+                       pid=app.config['FIREBASE_ID'],
+                       token=build_jwt(iss=service_account,
+                                       sub=service_account,
+                                       uid=current_user.username,
+                                       aud='https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
+                                       claims={"admin": current_user.has_role('admin')},
+                                       private_key=private_key))
+    else:
+        abort(404)
+
+# ---- Video Chat ----
+@app.route('/video')
+@login_required # need jwt token
+def video():
+    return render_template('twilio/video.html')
+
+# ---- Firebase Resources Group ----
+class FirebaseView(MethodView):
+    decorators = [login_required]
+
+    def get_template_name(self):
+        return 'firebase/' + self.template_name
+
+    def get(self):
+        data = self.get_data() # child data
+        data['current_user'] = dump_user(current_user)
+        context = {'injection': data}
+        return render_template(self.get_template_name(), **context)
+
+class ChatView(FirebaseView):
+    def __init__(self, template_name):
+        self.template_name = template_name
+
+    def get_data(self):
+        """
+        Find the chat_id, the only entry point allow current user to write
+        """
+        #pass
+        return {'chat_ref': firedbs.get_dependency_path('chat', current_user.id),
+                'draw_ref': firedbs.get_dependency_path('draw', current_user.id),
+                'video_room': current_user.get_video_room()}
+
+app.add_url_rule('/chat',
+                 view_func=ChatView.as_view('chat_page',
+                                            template_name='chat.html'))
+
+@app.route('/firebase')
+@login_required
+def firebase():
+    return render_template('frame/firebase.html',
+                           injection={'current_user': dump_user(current_user)})
+
+@app.route('/design')
+def design():
+    return render_template('twilio/design.html')
+

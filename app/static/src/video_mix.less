@@ -1,0 +1,72 @@
+// ---- global ----
+@container-height: 90vh;
+
+.bottom-par { // parent requirement
+  position: relative;
+}
+
+.bottom {
+  position: absolute; bottom: 0; right:0;// bottom
+}
+
+// ---- conponents ----
+.left-column {
+  height: @container-height;
+  border-style: solid;
+}
+
+.video-chat {
+  background-color: brown;
+  border-style: solid;
+  height: @container-height;
+  .bottom-par;
+  #party { // display a row of other ppl
+    max-height: 90vh;
+    border-radius: solid;
+    border-color: red;
+    .bottom;
+  }
+}
+
+// round video container
+.round-cropper {
+    width: 150px;
+    height: 150px;
+    // height: 25%;
+    // padding-top: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    border-style: solid; // test
+    video {
+      display: table;
+      margin: 0 auto;
+      height: 100%;
+      width: auto;
+      border-style: solid;
+
+      background-position: center;
+      background-color: #272726;
+      background-repeat: no-repeat;
+    }
+}
+
+.info-container {
+  height: @container-height;
+  .drawpad {
+    height: 40%;
+    border-style: solid; // test
+    .bottom-par;
+    .btns {
+      .bottom;
+    }
+  }
+  .message-board {
+    height: 60%;
+    border-style: solid; background-color: yellow;// test
+    .bottom-par; // set this as parent for input form in react injection
+    .input-board {
+      .bottom;
+    }
+  }
+}
