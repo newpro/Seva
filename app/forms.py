@@ -2,7 +2,6 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import TextField, validators, ValidationError, SubmitField, SelectField, DecimalField, IntegerField, HiddenField, BooleanField
 from wtforms.fields.html5 import DateField
-from wtforms_sqlalchemy.orm import model_form
 from flask_uploads import UploadSet, IMAGES
 from . import dbs
 

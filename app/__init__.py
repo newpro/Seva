@@ -14,6 +14,7 @@ if RUNTIME == 'development':
     app.config.from_object(development.DevelopmentConfig)
 elif RUNTIME == 'production':
     from settings import production
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'] # dynamic assigned
     app.config.from_object(production.ProductionConfig)
 elif RUNTIME == 'testing':
     from settings import testing
