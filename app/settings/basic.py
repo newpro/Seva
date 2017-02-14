@@ -1,5 +1,4 @@
 import settings
-from secret import global_ as g
 
 class Config(object):
     # ---- Basic ----
