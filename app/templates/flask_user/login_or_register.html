@@ -34,10 +34,10 @@
             {%trans%}Forgot your Password?{%endtrans%}</a>
         </p>
     {% endif %}
-{% if 'twitter' in config['OAUTHS'] %}
+{% if 'TWITTER_KEY' in config %}
   <a href="{{ url_for('oauth_authorize', provider='twitter') }}">twitter</a>
 {% endif %}
-{% if 'facebook' in config['OAUTHS'] %}
+{% if 'FACEBOOK_KEY' in config %}
   <a href="{{ url_for('oauth_authorize', provider='facebook') }}">facebook</a>
 {% endif %}
 </div>

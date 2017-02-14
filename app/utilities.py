@@ -89,12 +89,12 @@ class Preload():
     """
     Preload some basic data after refresh database.
     """
-    def __init__(self, db_util, db_schema, fire_schema):
+    def __init__(self, db_util, db_schema):
         self.db = db_schema
-        self.fire = fire_schema
+        #self.fire = fire_schema
         self.db_util = db_util
 
-    def reset_db(self, relational=False, realtime=False):
+    def reset_db(self, relational=False):
         """
         Reset DBs then preload data
         """
@@ -103,5 +103,5 @@ class Preload():
             self.db._RESET_DB()
 
         # ---- firedb reset ----
-        if realtime:
-            self.fire._RESET_DB()
+        #if realtime:
+            #self.fire._RESET_DB()

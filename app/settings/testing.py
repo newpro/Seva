@@ -1,5 +1,4 @@
 from basic import Config
-import secret as sec
 
 class TestingConfig(Config):
     TESTING = True

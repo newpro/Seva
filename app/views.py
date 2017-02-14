@@ -1,7 +1,7 @@
 from flask import render_template, request, url_for, current_app, redirect, flash, abort, jsonify
 from flask.views import MethodView
 from flask_user import login_required, roles_required, current_user
-from . import app, dbs, db, forms, db_util, firedbs
+from . import app, dbs, db, forms, db_util, loader
 from flask_s3 import create_all
 from flask_login import login_user, logout_user
 import uuid
@@ -33,6 +33,21 @@ def build_jwt(iss, sub, uid, aud, claims, private_key, encrption_method="RS256",
     except Exception as e:
         raise Exception("JWT: Error creating custom token: {}".format(e.message))
 
+
+def write_charge(charge, unique_id, user_id, product_id, email=None):
+    """
+    Write the charge record to DB
+    """
+    mongo_id = None
+    if loader.enabled('mongo'):
+        mongo_id = str(app.mongo['charges'].insert_one(charge).inserted_id)
+    purchase = dbs.Purchase(uuid=unique_id,
+                            email=email,
+                            mongo_id=mongo_id,
+                            customer_id=user_id,
+                            product_id=product_id).pip()
+    dbs.Delivery(purchase=purchase).add()
+
 def dump_user(user):
     """
     dump data of current_user to view
@@ -44,6 +59,16 @@ def dump_user(user):
                        'icon': x.icon
                        } for x in user.roles]
             }
+
+def get_dependency_path(dependency, user_id): # DUMMY
+    base_path = '' 
+    if dependency == 'chat': 
+        base_path = 'chats' 
+    elif dependency == 'draw': 
+        base_path = 'draws' 
+    else: 
+        raise Exception('no dependency') 
+    return '{}/{}'.format(base_path, 1) # dummy
 
 # ---- Management Views ----
 from flask_admin import Admin
@@ -157,6 +182,8 @@ from . import stripe
 @app.route('/product/<product_id>', methods=['GET'])
 @login_required
 def stripe_payment(product_id):
+    if not loader.enabled('stripe'):
+        raise Exception('Stripe not enabled')
     product = dbs.Product.query.get(product_id)
     if (not product) or (not product.is_active):
         raise Exception('product not fit for sale')
@@ -186,11 +213,13 @@ def stripe_payment(product_id):
 def stripe_declined():
     return """<html><body><h1>Card Declined</h1><p>Your chard could not
             be charged. Please check the number and/or contact your credit card
-            company.</p></body></html>"""    
+            company.</p></body></html>"""
 
 @app.route('/stripe/quickcharge', methods=['POST'])
 @login_required
 def stripe_quickcharge():
+    if not loader.enabled('stripe'):
+        raise Exception('Stripe not enabled')
     unique_id = str(uuid.uuid4()) # unique code accross all records
     stripe_id = current_user.get_stripe()
     if not stripe_id:
@@ -217,12 +246,7 @@ def stripe_quickcharge():
     except stripe.CardError, e:
         redirect(url_for(stripe_declined))       
     # -- record charge --
-    mongo_id = str(app.mongo['charge'].insert_one(charge).inserted_id)
-    purchase = dbs.Purchase(uuid=unique_id,
-                            mongo_id=mongo_id,
-                            customer_id=current_user.id,
-                            product_id=product.id).pip()
-    dbs.Delivery(purchase=purchase).add()
+    write_charge(charge, unique_id, current_user.id, product.id)
     # CRUMB: add post purchase operations
     flash('stripe quickcharge complete', category='success')
     return redirect(url_for('index'))
@@ -230,6 +254,8 @@ def stripe_quickcharge():
 @app.route('/stripe/charge', methods=['POST'])
 @login_required
 def stripe_charge():
+    if not loader.enabled('stripe'):
+        raise Exception('Stripe not enabled')
     # -- fetch form info --
     unique_id = str(uuid.uuid4()) # unique code accross all records
     stripe_token = request.form['stripeToken']
@@ -302,13 +328,7 @@ def stripe_charge():
     current_user.set_address(ship=ship, bill=bill)
 
     # -- record charge --
-    mongo_id = str(app.mongo['charge'].insert_one(charge).inserted_id)
-    purchase = dbs.Purchase(uuid=unique_id,
-                            email=email,
-                            mongo_id=mongo_id,
-                            customer_id=current_user.id,
-                            product_id=product.id).pip()
-    dbs.Delivery(purchase=purchase).add()
+    write_charge(charge, unique_id, current_user.id, product.id, email)
     # CRUMB: add post purchase operations
     flash('stripe charge complete', category='success')
     return redirect(url_for('index'))
@@ -316,7 +336,9 @@ def stripe_charge():
 # ---- JWT Acquire ----
 @app.route('/jwt/<party>', methods=['GET'])
 @login_required # thrird party normally have services that might cost u (like get video call)
-def jwt_token(party):   
+def jwt_token(party):
+    if not loader.enabled(party):
+        raise Exception('Party is not enabled: {}'.format(party))    
     if party == 'twilio':
         # twilio reference: https://github.com/TwilioDevEd/video-quickstart-python
         # Create an Access Token
@@ -375,8 +397,8 @@ class ChatView(FirebaseView):
         Find the chat_id, the only entry point allow current user to write
         """
         #pass
-        return {'chat_ref': firedbs.get_dependency_path('chat', current_user.id),
-                'draw_ref': firedbs.get_dependency_path('draw', current_user.id),
+        return {'chat_ref': get_dependency_path('chat', current_user.id),
+                'draw_ref': get_dependency_path('draw', current_user.id),
                 'video_room': current_user.get_video_room()}
 
 app.add_url_rule('/chat',
@@ -392,4 +414,3 @@ def firebase():
 @app.route('/design')
 def design():
     return render_template('twilio/design.html')
-

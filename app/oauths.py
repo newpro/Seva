@@ -3,6 +3,7 @@ Oauth abstraction classes
 Based on: https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
 """
 from rauth import OAuth1Service, OAuth2Service
+from . import loader
 from flask import current_app, url_for, request, redirect, session
 
 class OAuthBase(object):
@@ -16,10 +17,10 @@ class OAuthBase(object):
     def __init__(self, provider_name):
         self.provider_name = provider_name
         self.store_user = False # flag for user storeage
-        if current_app.config['STORE_USER']:
+        if loader.enabled('mongo'):
             self.store_user = True
             self.mongo = current_app.mongo
-        credentials = current_app.config['OAUTHS'][provider_name]
+        credentials = loader.get_oauth(provider_name)
         self.consumer_id = credentials['id']
         self.consumer_secret = credentials['secret']
 
@@ -35,6 +36,8 @@ class OAuthBase(object):
 
     @classmethod
     def get_provider(self, provider_name):
+        if not loader.enabled(provider_name):
+            raise Exception('Oauth provide not enabled: {}'.format(provider_name))
         if self.providers is None:
             self.providers = {}
             for provider_class in self.__subclasses__():
@@ -47,8 +50,8 @@ class FacebookSignIn(OAuthBase):
         super(FacebookSignIn, self).__init__('facebook')
         self.service = OAuth2Service(
             name='facebook',
-            client_id=self.consumer_id,
-            client_secret=self.consumer_secret,
+            client_id=current_app.config['FACEBOOK_KEY'],
+            client_secret=current_app.config['FACEBOOK_SECRET'],
             authorize_url='https://graph.facebook.com/oauth/authorize',           
             access_token_url='https://graph.facebook.com/oauth/access_token',
             base_url='https://graph.facebook.com/'
@@ -85,8 +88,8 @@ class TwitterSignIn(OAuthBase):
         super(TwitterSignIn, self).__init__('twitter')
         self.service = OAuth1Service(
             name='twitter',
-            consumer_key=self.consumer_id,
-            consumer_secret=self.consumer_secret,
+            consumer_key=current_app.config['TWITTER_KEY'],
+            consumer_secret=current_app.config['TWITTER_SECRET'],
             request_token_url='https://api.twitter.com/oauth/request_token',
             authorize_url='https://api.twitter.com/oauth/authorize',
             access_token_url='https://api.twitter.com/oauth/access_token',
