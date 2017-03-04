@@ -190,6 +190,12 @@ def profile_test():
                            locs=locs,
                            user_info=user_info)
 
+@app.route('/ai/cities')
+def cities():
+    return jsonify({
+        'cities': ['Toronto', 'Waterloo']
+    })
+
 # ---- Stripe Views ----
 from . import stripe
 
