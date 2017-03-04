@@ -1,0 +1,22 @@
+{% extends "frame/bootstrap.html" %}
+
+{% block jumbotron_content %}
+
+<h1>Profile</h1>
+<p><h2>Welcome {{ current_user.username }}</h2></p>
+<p><a class="btn btn-primary" href="{{ url_for('logout') }}" role="button">Logout</a></p>
+
+{% if locs %}
+  {% for key in locs %}
+    <dt>{{ key|e }}</dt>
+  {% endfor %}
+{% endif %}
+
+{% if user_info %}
+  <!-- <form action="{{ url_for('user_modify') }}" method="post">
+    <p>username: {{ user_info.username }}</p>
+  </form> -->
+  {{user_info}}
+{% endif %}
+
+{% endblock %}

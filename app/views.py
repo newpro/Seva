@@ -176,6 +176,20 @@ def oauth_finish():
         return redirect(url_for('index'))
     return render_template('soc_user/finish.html', form=form, provider=provider)
 
+# ---- Seva Views ----
+@app.route('/profile_test')
+@login_required
+def profile_test():
+    # assume current user var is set correctly
+    # -- Mars the profile data --
+    user_info = dump_user(current_user)
+    locs = []
+    for loc in current_user.locations:
+        locs.append(loc.name)
+    return render_template('seva_test/profile.html',
+                           locs=locs,
+                           user_info=user_info)
+
 # ---- Stripe Views ----
 from . import stripe
 

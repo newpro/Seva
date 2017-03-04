@@ -26,12 +26,18 @@ chat_clients = db.Table('chat_client',
     db.Column('chat_fk', db.Integer, db.ForeignKey('chat.id'))
 )
 
+user_locations = db.Table('user_location',
+    db.Column('index', db.Integer, primary_key=True),
+    db.Column('user_fk', db.Integer, db.ForeignKey('user.id')),
+    db.Column('loc_fk', db.Integer, db.ForeignKey('location.id'))
+)
+
 # ---- Tables ----
 class Role(db.Model):
     __tablename__ = 'role'
 
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(25), unique=True, nullable=True)
+    name = db.Column(db.String(25), unique=True, nullable=False)
     color = db.Column(db.String(6), unique=True, nullable=True) # 6 digits hash code
     icon = db.Column(db.String(25), unique=True, nullable=True) # font awesome icon code
 
@@ -74,6 +80,23 @@ class SocialPlatform(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(25), unique=True, nullable=True)
     icon = db.Column(db.String(25), unique=True, nullable=True)
+
+    # -- Helpers --
+    def __repr__(self):
+        return '<Role %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+class Location(db.Model):
+    __tablename__ = "location"
+
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(25), unique=True, nullable=True)
 
     # -- Helpers --
     def __repr__(self):
@@ -173,6 +196,9 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(50), nullable=False, default='')
     social_id = db.Column(db.String(64), nullable=True, unique=True)
 
+    # -- Seva Field --
+    phone = db.Column(db.String(20), nullable=True)
+
     # -- Optional field --
     profile_url = db.Column(db.String(200), nullable=False, default='')
     stripe_customer_id = db.Column(db.String, nullable=True) # quick charge support
@@ -191,6 +217,11 @@ class User(db.Model, UserMixin):
 
     chats = relationship("Chat",
                          secondary=chat_clients,
+                         lazy='dynamic')
+
+    # each user linked to a list of locations they can help
+    locations = relationship("Location",
+                         secondary=user_locations,
                          lazy='dynamic')
 
     # -- Column overwrite --
@@ -265,9 +296,21 @@ class User(db.Model, UserMixin):
 
     def add_chat(self, chat, ref=False):
         if ref:
-            _add_to_secondary(self.social, chat)
+            _add_to_secondary(self.chats, chat)
         else:
-            _add_to_secondary(self.social, chat, fetch_table='chat')
+            _add_to_secondary(self.chats, chat, fetch_table='chat')
+
+    # ---- Location Helpers ----
+    def add_loc(self, loc, ref=False):
+        if ref:
+            _add_to_secondary(self.locations, loc)
+        else:
+            _add_to_secondary(self.locations, loc, fetch_table='location')
+
+    def has_loc(self, loc, ref=False):
+        if not ref:
+            loc = fetch('location', loc)
+        return loc in self.locations.all()
 
     # ---- Payment Helpers ----
     def get_stripe(self):
@@ -456,6 +499,9 @@ def fetch(column, index):
     elif column == 'chat':
         _db = Chat
         field = Chat.id
+    elif column == 'location':
+        _db = Location
+        field = Location.name
     # CRUMB: add additional tables for fetching
     else:
         raise Exception('Column not recognizable')
@@ -498,9 +544,14 @@ def _init_roles():
     * Level control: 'user', 'service', 'admin', 'boss'
     """
     user = Role(name='user', color='4DBD33', icon='user').pip()
-    service = Role(name='service', color='57A8BB', icon='fax').pip().add_hierarchy([user])
-    admin = Role(name='admin', color='F16236', icon='user-plus').pip().add_hierarchy([user, service])
+    care_receiver = Role(name='care_receiver').pip().add_hierarchy([user])
+    care_giver = Role(name='care_giver').pip().add_hierarchy([user, care_receiver])
+    admin = Role(name='admin', color='F16236', icon='user-plus').pip().add_hierarchy([user, care_giver, care_receiver])
     # CANDY: add additional roles
+
+def _init_loc():
+    Location(name='Toronto').add()
+    Location(name='Waterloo').add()
 
 def _init_social():
     SocialPlatform(name='twitter', icon='twitter-square').add()
@@ -520,9 +571,18 @@ def _init_data():
          password = '007', first_name = 'duck2', last_name = 'mcgill2',
          is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
 
-    User(username='service_test', email='service1@email.com', active=True,
-         password = '007', first_name = 'goose', last_name = 'abilio',
-         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('service')
+    # ---- Care test ----
+    neil = User(username='neil', email='care1@email.com', active=True,
+                password = '007', first_name = 'Neil', last_name = 'Abilio',
+                is_enabled=True, confirmed_at=datetime.now()).pip()
+    neil.add_role('care_giver')
+    neil.add_loc('Toronto')
+
+    judy = User(username='judy', email='receive1@email.com', active=True,
+                password = '007', first_name = 'Judy', last_name = 'Porto',
+                is_enabled=True, confirmed_at=datetime.now()).pip()
+    judy.add_role('care_receiver')
+    judy.add_loc('Waterloo')
 
     admin_test = User(username='admin_test', email='admin1@email.com', active=True,
                       password = '007', first_name = 'sponge', last_name = 'bob',
@@ -542,6 +602,7 @@ def _RESET_DB():
     _init_social()
     _init_delivery_state()
     _init_roles()
+    _init_loc()
     if app.config['RUNTIME'] != 'production':
         _init_data()
 
