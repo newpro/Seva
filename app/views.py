@@ -1,4 +1,4 @@
-from flask import render_template, request, url_for, current_app, redirect, flash, abort, jsonify
+from flask import render_template, request, url_for, current_app, redirect, flash, abort, jsonify, make_response
 from flask.views import MethodView
 from flask_user import login_required, roles_required, current_user
 from . import app, dbs, db, forms, db_util, loader
@@ -229,46 +229,79 @@ def map_points():
         service_list.append(s_data)
     return jsonify({'data': service_list})
 
-@app.route('/ai/request', methods=['POST'])
+def makeWebhookResult(req):
+    if req.get("result").get("action") != "shipping.cost":
+        return {}
+    result = req.get("result")
+    parameters = result.get("parameters")
+    zone = parameters.get("shipping-zone")
+    cost = {'Europe':100, 'North America':200, 'South America':300, 'Asia':400, 'Africa':500}
+    speech = "The cost of shipping to " + zone + " is " + str(cost[zone]) + " euros."
+
+    print("Response:")
+    print(speech)
+
+    return {
+        "speech": speech,
+        "displayText": speech,
+        #"data": {},
+        # "contextOut": [],
+        "source": "apiai-onlinestore-shipping"
+    }
+
+@app.route('/ai/hook', methods=['POST'])
 @cross_origin()
-def new_request():
-    data = request.values
-    try:
-        me = dbs.fetch('user', data['me'])
-        msg = data['msg']
-        type_ = dbs.fetch('package', data['type'])
-        rush = False
-        if 'rush' in data:
-            rush = data['rush']
-        addr=''
-        if 'addr' in data:
-            addr = data['addr']
-    except:
-        return jsonify({
-            'state': 'err',
-            'msg': 'Data format err'
-        })
-    if not me:
-        return jsonify({
-            'state': 'err',
-            'msg': 'Cannot find user'
-        })
-    if not type_:
-        return jsonify({
-            'state': 'err',
-            'msg': 'Cannot find package'
-        })
-    try:
-        me.request_service(title=msg, package=type_.name, rush=rush, addr=addr)
-    except:
-        return jsonify({
-            'state': 'err',
-            'msg': 'unknow error'
-        })
-    return jsonify({
-        'state': 'success',
-        'msg': request.values
-    })
+def ai_hook():
+    #data = request.values
+    #try:
+        #me = dbs.fetch('user', data['me'])
+        #msg = data['msg']
+        #type_ = dbs.fetch('package', data['type'])
+        #rush = False
+        #if 'rush' in data:
+            #rush = data['rush']
+        #addr=''
+        #if 'addr' in data:
+            #addr = data['addr']
+    #except:
+        #return jsonify({
+            #'state': 'err',
+            #'msg': 'Data format err'
+        #})
+    #if not me:
+        #return jsonify({
+            #'state': 'err',
+            #'msg': 'Cannot find user'
+        #})
+    #if not type_:
+        #return jsonify({
+            #'state': 'err',
+            #'msg': 'Cannot find package'
+        #})
+    #try:
+        #me.request_service(title=msg, package=type_.name, rush=rush, addr=addr)
+    #except:
+        #return jsonify({
+            #'state': 'err',
+            #'msg': 'unknow error'
+        #})
+    ##return jsonify({
+        ##'state': 'success',
+        ##'msg': request.values
+    ##})
+
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=4))
+
+    res = makeWebhookResult(req)
+
+    res = json.dumps(res, indent=4)
+    print(res)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
 
 # ---- Stripe Views ----
 from . import stripe
