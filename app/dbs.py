@@ -1,4 +1,5 @@
-from . import db, db_util as util, app
+from . import db, db_util as util, app, geolocator
+from random import random
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -98,9 +99,12 @@ class Location(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(25), unique=True, nullable=True)
 
+    users = relationship("User",
+                         secondary=user_locations,
+                         lazy='dynamic')
     # -- Helpers --
     def __repr__(self):
-        return '<Role %r>' % (self.name)
+        return '<Loc %r>' % (self.name)
 
     def add(self):
         util.add(self)
@@ -167,6 +171,53 @@ class Address(db.Model):
         self.add()
         return self
 
+# -- Seva spec --
+class Service(db.Model):
+    __tablename__ = 'service'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64), default='', nullable=False)
+    rush = db.Column(db.Boolean, default=False)
+    addr = db.Column(db.String(64), default='', nullable=True) # default empty, use user's
+    # FKs
+    receiver = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    package = db.Column(db.Integer, db.ForeignKey('package.id'), nullable=False)
+    # loc
+    lat = db.Column(db.Float, nullable=False)
+    lon = db.Column(db.Float, nullable=False)
+    # -- Helpers --
+    def __repr__(self):
+        return '<Service %r>' % (self.id)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
+# -- Seva Spec --
+class Package(db.Model):
+    __tablename__ = 'package'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(25), unique=True, nullable=False)
+    url = db.Column(db.String(60), unique=False, nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    # back
+    service = relationship(Service)
+
+    # -- Helpers --
+    def __repr__(self):
+        return '<Package %r>' % (self.name)
+
+    def add(self):
+        util.add(self)
+
+    def pip(self):
+        self.add()
+        return self
+
 from flask_user import UserMixin
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -198,6 +249,8 @@ class User(db.Model, UserMixin):
 
     # -- Seva Field --
     phone = db.Column(db.String(20), nullable=True)
+    home = db.Column(db.String(64), nullable=False, unique=False)
+    service = relationship(Service)
 
     # -- Optional field --
     profile_url = db.Column(db.String(200), nullable=False, default='')
@@ -356,6 +409,28 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return '<User %r, %r>' % (self.id, self.username)
 
+    # -- Seva Helpers --
+    def request_service(self, title, package, ref=False, rush=False, addr=''):
+        """short cut fun for service
+        """
+        if not ref:
+            package = fetch('package', package)
+        if not addr:
+            # use user to fill in addr
+            addr = self.home
+        loc = geolocator.geocode(addr)
+        off1 = random() * 0.3
+        off2 = random() * 0.3
+        lat = loc.latitude - 0.1 + off1
+        lon = loc.longitude - 0.1 + off2
+        Service(title=title,
+                rush=rush,
+                receiver=self.id,
+                lat=loc.latitude,
+                lon=loc.longitude,
+                addr=addr,
+                package=package.id).add()
+
 app_currency = app.config['CURRENCY']
 class Product(db.Model):
     """
@@ -502,6 +577,9 @@ def fetch(column, index):
     elif column == 'location':
         _db = Location
         field = Location.name
+    elif column == 'package':
+        _db = Package
+        field = Package.name
     # CRUMB: add additional tables for fetching
     else:
         raise Exception('Column not recognizable')
@@ -553,6 +631,17 @@ def _init_loc():
     Location(name='Toronto').add()
     Location(name='Waterloo').add()
 
+def _init_packages():
+    Package(name='1 hour talk',
+            url="www.google.ca",
+            price=300).add()
+    Package(name='checkup',
+            url="www.google.ca",
+            price=600).add()
+    Package(name='doctor check',
+            url="www.google.ca",
+            price=500).add()
+
 def _init_social():
     SocialPlatform(name='twitter', icon='twitter-square').add()
     SocialPlatform(name='facebook', icon='facebook-square').add()
@@ -565,34 +654,56 @@ def _init_data():
     # ---- User Tests ----
     User(username='user1', email='user1@email.com', active=True,
          password = '007', first_name = 'duck1', last_name = 'mcgill1',
-         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
+         is_enabled=True, confirmed_at=datetime.now(),
+         home='Toronto').pip().add_role('user')
 
     User(username='user2', email='user2@email.com', active=True,
          password = '007', first_name = 'duck2', last_name = 'mcgill2',
-         is_enabled=True, confirmed_at=datetime.now()).pip().add_role('user')
+         is_enabled=True, confirmed_at=datetime.now(),
+         home='Toronto').pip().add_role('user')
 
     # ---- Care test ----
     neil = User(username='neil', email='care1@email.com', active=True,
-                password = '007', first_name = 'Neil', last_name = 'Abilio',
-                is_enabled=True, confirmed_at=datetime.now()).pip()
+                password = '007', first_name = 'Neil', last_name = 'Selvalingam',
+                is_enabled=True, confirmed_at=datetime.now(),
+                home='Union Station, Toronto').pip()
     neil.add_role('care_giver')
     neil.add_loc('Toronto')
 
-    judy = User(username='judy', email='receive1@email.com', active=True,
-                password = '007', first_name = 'Judy', last_name = 'Porto',
-                is_enabled=True, confirmed_at=datetime.now()).pip()
-    judy.add_role('care_receiver')
-    judy.add_loc('Waterloo')
+    alice = User(username='alice', email='receive1@email.com', active=True,
+                password = '007', first_name = 'Alice', last_name = 'Howlend',
+                is_enabled=True, confirmed_at=datetime.now(),
+                home='264 Lester St, Waterloo').pip()
+    alice.add_role('care_receiver')
+
+    jan = User(username='jan', email='care2@email.com', active=True,
+               password = '007', first_name = 'Jan', last_name = 'Lau',
+               is_enabled=True, confirmed_at=datetime.now(),
+               home='330 Phillip St, Waterloo, ON N2L 3W9').pip()
+    jan.add_role('care_giver')
+    jan.add_loc('Waterloo')
+
+    lois = User(username='lois', email='receive2@email.com', active=True,
+                password = '007', first_name = 'Lois', last_name = 'Deter',
+                is_enabled=True, confirmed_at=datetime.now(),
+                home='toronto scarborough').pip()
+    lois.add_role('care_receiver')
 
     admin_test = User(username='admin_test', email='admin1@email.com', active=True,
                       password = '007', first_name = 'sponge', last_name = 'bob',
-                      is_enabled=True, confirmed_at=datetime.now()).pip()
+                      is_enabled=True, confirmed_at=datetime.now(),
+                      home='Toronto').pip()
     admin_test.add_role('admin')
     admin_test.add_social('facebook')
 
     # ---- Product Tests ----
     watch = Product(name='watch_test', price=123.45, is_active=True).pip()
 
+    # ---- Seva Specific Tests ----
+    alice.request_service("Drive my gradma to hospital",
+                          'doctor check')
+    lois.request_service("I need someone to check up my gradfather",
+                         'checkup')
     # CANDY: add additional user for roles here
     # CRUMB: add additional table tests here
 
@@ -603,6 +714,7 @@ def _RESET_DB():
     _init_delivery_state()
     _init_roles()
     _init_loc()
+    _init_packages()
     if app.config['RUNTIME'] != 'production':
         _init_data()
 

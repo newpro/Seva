@@ -34,6 +34,11 @@ db = SQLAlchemy(app)
 # ---- relational db utlities ----
 from utilities import DB_util
 db_util = DB_util(db)
+
+# ---- load location parse support
+from geopy.geocoders import Nominatim
+geolocator = Nominatim() # expose
+
 # ---- load schema ----
 import dbs
 # ---- load Amazon static support ----

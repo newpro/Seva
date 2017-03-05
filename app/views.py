@@ -190,11 +190,42 @@ def profile_test():
                            locs=locs,
                            user_info=user_info)
 
-@app.route('/ai/cities')
+@app.route('/ai')
 def cities():
-    return jsonify({
-        'cities': ['Toronto', 'Waterloo']
-    })
+    #return jsonify({
+        #'cities': ['Toronto', 'Waterloo']
+    #})
+    results = {}
+    # grab all locations
+    locs = dbs.Location.query.all()
+    for loc in locs:
+        tmp_users = []
+        for user in loc.users:
+            tmp_users.append(user.username)
+        results[loc.name] =  tmp_users
+    return jsonify(results)
+
+@app.route('/data/map')
+def map_points():
+    service_list = []
+    for service in dbs.Service.query.all():
+        # fetch package
+        package = dbs.Package.query.get(service.package)
+        # write data
+        s_data = {}
+        s_data['category'] = package.name
+        s_data['title'] = service.title
+        s_data['location'] = service.addr
+        s_data['latitude'] = service.lat
+        s_data['lon'] = service.lon
+        if service.rush:
+            s_data['price'] = package.price * 1.5
+        else:
+            s_data['price'] = package.price
+        s_data['rush'] = service.rush
+        s_data['url'] = package.url
+        service_list.append(s_data)
+    return jsonify({'data': service_list})
 
 # ---- Stripe Views ----
 from . import stripe
