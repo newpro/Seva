@@ -206,26 +206,35 @@ def cities():
         results[loc.name] =  tmp_users
     return jsonify(results)
 
+def get_one_service(service):
+    package = dbs.Package.query.get(service.package)
+    # write data
+    s_data = {}
+    s_data['id'] = service.id
+    s_data['category'] = package.name
+    s_data['title'] = service.title
+    s_data['location'] = service.addr
+    s_data['latitude'] = service.lat
+    s_data['lon'] = service.lon
+    if service.rush:
+        s_data['price'] = package.price * 1.5
+    else:
+        s_data['price'] = package.price
+    s_data['rush'] = service.rush
+    s_data['url'] = package.url
+    return s_data
+
 @app.route('/data/map')
+@app.route('/data/map/<sid>')
 @cross_origin()
-def map_points():
+def map_points(sid=None):
     service_list = []
+    if sid:
+        service = dbs.Service.query.get(sid)
+        return jsonify(get_one_service(service))
     for service in dbs.Service.query.all():
         # fetch package
-        package = dbs.Package.query.get(service.package)
-        # write data
-        s_data = {}
-        s_data['category'] = package.name
-        s_data['title'] = service.title
-        s_data['location'] = service.addr
-        s_data['latitude'] = service.lat
-        s_data['lon'] = service.lon
-        if service.rush:
-            s_data['price'] = package.price * 1.5
-        else:
-            s_data['price'] = package.price
-        s_data['rush'] = service.rush
-        s_data['url'] = package.url
+        s_data = get_one_service(service)
         service_list.append(s_data)
     return jsonify({'data': service_list})
 
