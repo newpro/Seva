@@ -258,6 +258,29 @@ def makeWebhookResult(req):
         "source": "apiai-onlinestore-shipping"
     }
 
+def makeWebhookResult2(req):
+    if req.get("result").get("action") != "service.upload":
+        return {}
+    result = req.get("result")
+    parameters = result.get("parameters")
+    zone = parameters.get("location")
+    pack = parameters.get('packages')
+    title = parameters.get('title')
+    #cost = {'Europe':100, 'North America':200, 'South America':300, 'Asia':400, 'Africa':500}
+    #speech = "The cost of shipping to " + zone + " is " + str(cost[zone]) + " euros."
+    speech = "Your appointment has been published. zone: {}, package: {}, title: {}".format(zone, pack, title)
+
+    print("Response:")
+    print(speech)
+
+    return {
+        "speech": speech,
+        "displayText": speech,
+        #"data": {},
+        # "contextOut": [],
+        "source": "apiai-onlinestore-shipping"
+    }
+
 @app.route('/ai/hook', methods=['POST'])
 @cross_origin()
 def ai_hook():
@@ -304,7 +327,7 @@ def ai_hook():
     print("Request:")
     print(json.dumps(req, indent=4))
 
-    res = makeWebhookResult(req)
+    res = makeWebhookResult2(req)
 
     res = json.dumps(res, indent=4)
     print(res)
