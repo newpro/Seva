@@ -129,6 +129,15 @@ def logout():
     flash('Logout Complete', category='info')
     return redirect(url_for('index'))
 
+@app.route('/seva')
+def seva():
+    return render_template('seva/index.html')
+
+# com
+@app.route('/assets/external/<string:page_name>')
+def asset_external(page_name):
+    return render_template('external/%s' % page_name)
+
 # ---- OAuths Views ----
 from oauths import OAuthBase
 @app.route('/oauth/provider/<provider>')

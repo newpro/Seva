@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+
+    <linkrel="stylesheet" href=" {{ url_for('static',filename='fonts/font-awesome.css') }}" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href=" {{ url_for('static',filename='bootstrap/css/bootstrap.css') }}" type="text/css">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href=" {{ url_for('static',filename='css/bootstrap-select.min.css') }}" type="text/css">
+    <link rel="stylesheet" href=" {{ url_for('static',filename='css/owl.carousel.css') }}" type="text/css">
+    <link rel="stylesheet" href=" {{ url_for('static',filename='css/jquery.mCustomScrollbar.css') }}" type="text/css">
+    <link rel="stylesheet" href=" {{ url_for('static',filename='css/style.css') }}" type="text/css">
+    <link rel="stylesheet" href=" {{ url_for('static',filename='css/user.style.css') }}" type="text/css">
+    <title>Seva - Service everyone, value all</title>
+
+</head>
+
+<body onunload="" class="map-fullscreen page-homepage navigation-off-canvas" id="page-top">
+
+<!-- Outer Wrapper-->
+<div id="outer-wrapper">
+    <!-- Inner Wrapper -->
+    <div id="inner-wrapper">
+        <!-- Navigation-->
+        <div class="header">
+            <div class="wrapper">
+                <div class="brand">
+                    <a href="index-directory.html">
+                      <img src="{{ url_for('static', filename='version-selector/logo.png') }}" style="width:70px" alt="">
+                    </a>
+                </div>
+                <!--<iframe-->
+                <!--  width="600"-->
+                <!--  height="450"-->
+                <!--  frameborder="0" style="border:0"-->
+                <!--  src="https://www.google.com/maps/embed/v1/place?key=AIzaSyB-x4HEgDbYXDJDahfKYQFJ9tPAxqfoZZA-->
+                <!--    &q=Toronto" allowfullscreen>-->
+                <!--</iframe>-->
+                <nav class="navigation-items">
+                    <div class="wrapper">
+                        <ul class="main-navigation navigation-top-header"></ul>
+                        <ul class="user-area">
+                            <li>300 Credits</li>
+                        </ul>
+                        <a href="submit.html" class="submit-item">
+                            <div class="content"><span>Submit Your Item</span></div>
+                            <div class="icon">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                        </a>
+                        <div class="toggle-navigation">
+                            <div class="icon">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- end Navigation-->
+        <!-- Page Canvas-->
+        <div id="page-canvas">
+            <!--Off Canvas Navigation-->
+            <nav class="off-canvas-navigation">
+                <header>Navigation</header>
+                <div class="main-navigation navigation-off-canvas"></div>
+            </nav>
+            <!--end Off Canvas Navigation-->
+            <!--Page Content-->
+            <div id="page-content">
+            <!-- Map Canvas-->
+            <div class="map-canvas list-width-30">
+                <!-- Map -->
+                <div class="map">
+                    <div class="toggle-navigation">
+                        <div class="icon">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                    </div>
+
+                    <!--/#map-->
+
+                    <!-- /.search-bar -->
+                    <!--/.toggle-navigation-->
+                    <div id="map" class="has-parallax"></div>
+                </div>
+                <!-- end Map -->
+                <!--Items List-->
+                <div class="items-list">
+                    <div class="inner">
+
+                        <div class="search-bar horizontal">
+                        <form id="search" class="main-search border-less-inputs" role="form" method="post">
+                            <div class="input-row">
+                                <!--<div class="form-group">-->
+                                <!--    <input type="text" class="form-control" id="keyword" placeholder="Enter Keyword">-->
+                                <!--</div>-->
+                                <!-- /.form-group -->
+                                <div class="form-group col-xs-12">
+                                    <div class="input-group location">
+                                        <input type="text" class="form-control col-xs-10" id="location" placeholder="What city are you volunteering in?">
+                                        <span class="input-group-addon"><i class="fa fa-map-marker geolocation" data-toggle="tooltip" data-placement="bottom" title="Find my position"></i></span>
+                                    </div>
+                                </div>
+
+                                <!-- /.form-group -->
+                                <!--<div class="form-group">-->
+                                <!--    <select name="category" multiple title="Select Category" data-live-search="true">-->
+                                <!--        <option value="1">Stores</option>-->
+                                <!--        <option value="2" class="sub-category">Apparel</option>-->
+                                <!--        <option value="3" class="sub-category">Computers</option>-->
+                                <!--        <option value="4" class="sub-category">Nature</option>-->
+                                <!--        <option value="5">Tourism</option>-->
+                                <!--        <option value="6">Restaurant & Bars</option>-->
+                                <!--        <option value="7" class="sub-category">Bars</option>-->
+                                <!--        <option value="8" class="sub-category">Vegetarian</option>-->
+                                <!--        <option value="9" class="sub-category">Steak & Grill</option>-->
+                                <!--        <option value="10">Sports</option>-->
+                                <!--        <option value="11" class="sub-category">Cycling</option>-->
+                                <!--        <option value="12" class="sub-category">Water Sports</option>-->
+                                <!--        <option value="13" class="sub-category">Winter Sports</option>-->
+                                <!--    </select>-->
+                                <!--</div>-->
+                                <!-- /.form-group -->
+                                <div class="form-group">
+                                    <!--<button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>-->
+                                </div>
+                                <!-- /.form-group -->
+                            </div>
+                            <!-- /.input-row -->
+                        </form>
+                        <!-- /.main-search -->
+                    </div>
+                        <ul class="results list">
+
+                            <li>
+
+
+
+                            </li>
+
+                        </ul>
+                    </div>
+                    <!--results-->
+                </div>
+                <!--end Items List-->
+            </div>
+            <!-- end Map Canvas-->
+
+
+                            </div>
+
+                            <!-- /.col-md-3-->
+                        </div>
+                        <!--/.row-->
+                    </div>
+
+
+            </div>
+            <!-- end Page Content-->
+        </div>
+        <!-- end Page Canvas-->
+    </div>
+    <!-- end Inner Wrapper -->
+</div>
+<!-- end Outer Wrapper-->
+<div >
+    <div class="row">
+                        <!--Item Detail Content-->
+        <div class="col-md-8 col-md-offset-2 text-center">
+                            <section class="block" id="main-content">
+                                <header class="page-title">
+                                    <div>
+                                        <h1 id="title"></h1>
+                                        <figure id="description"></figure>
+                                        <br/>
+                                        <button style="display:none" id = "acceptBtn">Offer to help</button><br/>
+                                        <div style="display:none" id = "contactInfo"><br/>Contact informtion:<br/>
+                                        <p id = "address"></p>
+                                        </div>
+                                    </div>
+
+                                </header>
+
+                        <!-- /.col-md-3-->
+                        <!--end Sidebar-->
+                    </div><!-- /.row-->
+                </section>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery-2.1.0.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/before.load.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery-migrate-1.2.1.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'bootstrap/js/bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/smoothscroll.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap-select.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.hotkeys.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.nouislider.all.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.mCustomScrollbar.concat.min.js') }}"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&amp;libraries=places"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/infobox.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/richmarker-compiled.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/markerclusterer.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/custom.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/_infobox.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/maps.js') }}"></script>
+<!--[if lte IE 9]>
+<script type="text/javascript" src="assets/js/ie-scripts.js"></script>
+<![endif]-->
+<style>
+    #acceptBtn {
+        padding : 10px;
+        margin : 5px;
+        background : #FF8C00;
+        color : white;
+        border-radius : 5px;
+        border : none;
+
+    }
+
+    #acceptBtn:focus {
+        outline: none;
+    }
+
+</style>
+<script>
+    var key = "AIzaSyB-x4HEgDbYXDJDahfKYQFJ9tPAxqfoZZA";
+    var _latitude = 51.541216;
+    var _longitude = -0.095678;
+    var jsonPath = 'https://seva.herokuapp.com/data/map';
+
+//     // Load JSON data and create Google Maps
+//     var json = {
+//     "data": [
+//         {
+//             "id": 1,
+//             "category": "real_estate",
+//             "title": "Steak House Restaurant",
+//             "location": "63 Birch Street",
+//             "latitude": 51.541599,
+//             "longitude": -0.112588,
+//             "url": "item-detail.html",
+//             "type": "Apartment",
+//             "type_icon": "assets/icons/store/apparel/umbrella-2.png"
+//         }
+//     ]
+//   };
+    //
+    $.getJSON(jsonPath)
+        .done(function(json) {
+            json.data.forEach(function(item) {
+                item.longitude = item.lon;
+                item.url = jsonPath + '/' + item.id
+            });
+            console.log(json);
+            createHomepageGoogleMap(_latitude,_longitude,json);
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+            console.log(error);
+        })
+    ;
+
+    // Set if language is RTL and load Owl Carousel
+
+    $(window).load(function(){
+
+        var $accept = $("#acceptBtn");
+        var $title = $("#title");
+        var $address = $("#address");
+        var $description = $("#description");
+
+
+        var rtl = false; // Use RTL
+        // initializeOwl(rtl);
+        $("#search").on('submit', function(e){
+            e.preventDefault();
+        })
+
+        $(document).on("click", ".offerbtn", function(e){
+            e.preventDefault();
+                  $('body').css('margin-bottom', '100px');
+
+            var id = e.target.id;
+            $.getJSON(jsonPath + '/' + id)
+                .done(function(json) {
+                    console.log(json);
+
+                $title.html(json.title);
+                $accept.show();
+
+                $accept.click(function(){
+                    $accept.html("Waiting for care receiver to accept...");
+                    setTimeout(function(){
+                        $("#contactInfo").show();
+                        $accept.html("Care receiver has accepted your request");
+                        $accept.css('background', 'green');
+                        $address.html('Location: ' + json.location + '<br/>Phone: 416-299-7776');
+
+                    }, 5000);
+
+                })
+
+
+                })
+                .fail(function( jqxhr, textStatus, error ) {
+                    console.log(error);
+                })
+            ;
+            document.getElementById('offerService').scrollIntoView();
+
+        })
+
+        $(document).on('keypress', function(e){
+            if (key == 13)
+                e.preventDefault();
+        })
+    });
+
+    autoComplete();
+
+</script>
+
+<!--[if lte IE 9]>
+<script type="text/javascript" src="assets/js/ie-scripts.js"></script>
+<![endif]-->
+</body>
+<div id="offerService" />
+</html>
