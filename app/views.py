@@ -238,6 +238,16 @@ def map_points(sid=None):
         service_list.append(s_data)
     return jsonify({'data': service_list})
 
+@app.route('/data/remove/<sid>')
+@cross_origin()
+def del_point(sid):
+    service = dbs.Service.query.get(sid)
+    if not service:
+        return jsonify({'resp': 'fail to locate service'})
+    db.session.delete(service)
+    db_util.commit()
+    return jsonify({'resp': 'success'}) 
+
 def makeWebhookResult(req):
     if req.get("result").get("action") != "shipping.cost":
         return {}
@@ -260,6 +270,7 @@ def makeWebhookResult(req):
 
 def makeWebhookResult2(req):
     if req.get("result").get("action") != "service.upload":
+        print '--- empty request---'
         return {}
     result = req.get("result")
     parameters = result.get("parameters")
