@@ -17,21 +17,22 @@ function drawInfobox(category, infoboxContent, json, i){
 
     var ibContent = '';
     ibContent =
-    '<div class="infobox ' + color + '">' +
+    '<div class="infobox listing' + color + '">' +
         '<div class="inner">' +
             '<div class="image">' +
                 '<div class="overlay">' +
                     '<div class="wrapper">' +
                         '<a href="#" class="quick-view" data-toggle="modal" data-target="#modal" id=">Quick View</a>' +
                         '<hr>' +
-                        '<a href="' + url +  '" class="detail">Go to Detail</a>' +
+                        '<a class="detail">Go to Detail</a>' +
                     '</div>' +
                 '</div>' +
-                '<a href="' + url +  '" class="description">' +
+                '<a class="description">' +
                     '<div class="meta">' +
                         price +
                         '<h2>' + title +  '</h2>' +
                         '<figure>' + location +  '</figure>' +
+                        '<button class="btn offerbtn" id="' + json.data[i].id + '">Offer</button>' + 
                         '<i class="fa fa-angle-right"></i>' +
                     '</div>' +
                 '</a>' +

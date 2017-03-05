@@ -46,8 +46,7 @@
                     <div class="wrapper">
                         <ul class="main-navigation navigation-top-header"></ul>
                         <ul class="user-area">
-                            <li><a href="sign-in.html">Sign In</a></li>
-                            <li><a href="register.html"><strong>Register</strong></a></li>
+                            <li>300 Credits</li>
                         </ul>
                         <a href="submit.html" class="submit-item">
                             <div class="content"><span>Submit Your Item</span></div>
@@ -100,7 +99,7 @@
                 <div class="items-list">
                     <div class="inner">
 
-                                            <div class="search-bar horizontal">
+                        <div class="search-bar horizontal">
                         <form id="search" class="main-search border-less-inputs" role="form" method="post">
                             <div class="input-row">
                                 <!--<div class="form-group">-->
@@ -113,6 +112,7 @@
                                         <span class="input-group-addon"><i class="fa fa-map-marker geolocation" data-toggle="tooltip" data-placement="bottom" title="Find my position"></i></span>
                                     </div>
                                 </div>
+                                
                                 <!-- /.form-group -->
                                 <!--<div class="form-group">-->
                                 <!--    <select name="category" multiple title="Select Category" data-live-search="true">-->
@@ -142,7 +142,13 @@
                         <!-- /.main-search -->
                     </div>
                         <ul class="results list">
-
+                            
+                            <li>
+                                
+                    
+                                
+                            </li>                          
+                            
                         </ul>
                     </div>
                     <!--results-->
@@ -158,18 +164,43 @@
                         </div>
                         <!--/.row-->
                     </div>
-                </section>
 
 
             </div>
             <!-- end Page Content-->
         </div>
         <!-- end Page Canvas-->
-        ß
     </div>
     <!-- end Inner Wrapper -->
 </div>
 <!-- end Outer Wrapper-->
+<div >
+    <div class="row">
+                        <!--Item Detail Content-->
+        <div class="col-md-8 col-md-offset-2 text-center">
+                            <section class="block" id="main-content">
+                                <header class="page-title">
+                                    <div>
+                                        <h1 id="title"></h1>
+                                        <figure id="description"></figure>
+                                        <br/>
+                                        <button style="display:none" id = "acceptBtn">Offer to help</button><br/>
+                                        <div style="display:none" id = "contactInfo"><br/>Contact informtion:<br/>
+                                        <p id = "address"></p>
+                                        </div>
+                                    </div>
+                        
+                                </header>
+
+                        <!-- /.col-md-3-->
+                        <!--end Sidebar-->
+                    </div><!-- /.row-->
+                </section>
+        </div>
+    </div>
+</div>
+
+
 
 <script type="text/javascript" src="assets/js/jquery-2.1.0.min.js"></script>
 <script type="text/javascript" src="assets/js/before.load.js"></script>
@@ -186,11 +217,25 @@
 <script type="text/javascript" src="assets/js/markerclusterer.js"></script>
 <script type="text/javascript" src="assets/js/custom.js"></script>
 <script type="text/javascript" src="assets/js/maps.js"></script>
-
 <!--[if lte IE 9]>
 <script type="text/javascript" src="assets/js/ie-scripts.js"></script>
 <![endif]-->
-
+<style>
+    #acceptBtn {
+        padding : 10px;
+        margin : 5px;
+        background : #FF8C00;
+        color : white;
+        border-radius : 5px;
+        border : none;
+        
+    }
+    
+    #acceptBtn:focus {
+        outline: none;
+    }
+    
+</style>
 <script>
     var key = "AIzaSyB-x4HEgDbYXDJDahfKYQFJ9tPAxqfoZZA";
     var _latitude = 51.541216;
@@ -216,8 +261,11 @@
     //
     $.getJSON(jsonPath)
         .done(function(json) {
+            json.data.forEach(function(item) {
+                item.longitude = item.lon;
+                item.url = jsonPath + '/' + item.id
+            });
             console.log(json);
-            json.data.forEach(function(item) { item.longitude = item.lon; });
             createHomepageGoogleMap(_latitude,_longitude,json);
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -228,10 +276,51 @@
     // Set if language is RTL and load Owl Carousel
 
     $(window).load(function(){
+        
+        var $accept = $("#acceptBtn");
+        var $title = $("#title");
+        var $address = $("#address");      
+        var $description = $("#description");
+        
+        
         var rtl = false; // Use RTL
-        initializeOwl(rtl);
+        // initializeOwl(rtl);
         $("#search").on('submit', function(e){
             e.preventDefault();
+        })
+        
+        $(document).on("click", ".offerbtn", function(e){
+            e.preventDefault();
+                  $('body').css('margin-bottom', '100px');
+          
+            var id = e.target.id;
+            $.getJSON(jsonPath + '/' + id)
+                .done(function(json) {
+                    console.log(json);
+                    
+                $title.html(json.title);
+                $accept.show();
+                
+                $accept.click(function(){
+                    $accept.html("Waiting for care receiver to accept...");
+                    setTimeout(function(){
+                        $("#contactInfo").show();
+                        $accept.html("Care receiver has accepted your request");
+                        $accept.css('background', 'green');
+                        $address.html('Location: ' + json.location + '<br/>Phone: 416-299-7776');
+                        
+                    }, 5000);
+                    
+                })                    
+                    
+                    
+                })
+                .fail(function( jqxhr, textStatus, error ) {
+                    console.log(error);
+                })
+            ;            
+            document.getElementById('offerService').scrollIntoView();
+
         })
         
         $(document).on('keypress', function(e){
@@ -248,4 +337,5 @@
 <script type="text/javascript" src="assets/js/ie-scripts.js"></script>
 <![endif]-->
 </body>
+<div id="offerService" />
 </html>
