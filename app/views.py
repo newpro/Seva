@@ -278,7 +278,7 @@ def makeWebhookResult2(req):
         "displayText": speech,
         #"data": {},
         # "contextOut": [],
-        "source": "apiai-onlinestore-shipping"
+        "source": "agent"
     }
 
 @app.route('/ai/hook', methods=['POST'])
