@@ -1,9 +1,6 @@
 from flask import Flask
 app = Flask(__name__)
 
-from flask_cors import CORS, cross_origin
-cors = CORS(app, resources={r"/data/*": {"origins": "*"}})
-
 # -- Import settings --
 import os
 try:

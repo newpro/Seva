@@ -11,6 +11,7 @@ from python_jwt import generate_jwt
 import Crypto.PublicKey.RSA as RSA
 import datetime
 import json
+from flask_cors import cross_origin
 
 # ---- Helper functions ----
 def build_jwt(iss, sub, uid, aud, claims, private_key, encrption_method="RS256", exp_min=60):
@@ -206,6 +207,7 @@ def cities():
     return jsonify(results)
 
 @app.route('/data/map')
+@cross_origin()
 def map_points():
     service_list = []
     for service in dbs.Service.query.all():
@@ -226,6 +228,47 @@ def map_points():
         s_data['url'] = package.url
         service_list.append(s_data)
     return jsonify({'data': service_list})
+
+@app.route('/ai/request', methods=['POST'])
+@cross_origin()
+def new_request():
+    data = request.values
+    try:
+        me = dbs.fetch('user', data['me'])
+        msg = data['msg']
+        type_ = dbs.fetch('package', data['type'])
+        rush = False
+        if 'rush' in data:
+            rush = data['rush']
+        addr=''
+        if 'addr' in data:
+            addr = data['addr']
+    except:
+        return jsonify({
+            'state': 'err',
+            'msg': 'Data format err'
+        })
+    if not me:
+        return jsonify({
+            'state': 'err',
+            'msg': 'Cannot find user'
+        })
+    if not type_:
+        return jsonify({
+            'state': 'err',
+            'msg': 'Cannot find package'
+        })
+    try:
+        me.request_service(title=msg, package=type_.name, rush=rush, addr=addr)
+    except:
+        return jsonify({
+            'state': 'err',
+            'msg': 'unknow error'
+        })
+    return jsonify({
+        'state': 'success',
+        'msg': request.values
+    })
 
 # ---- Stripe Views ----
 from . import stripe
