@@ -41,3 +41,6 @@ pyrebase
 
 # heroku
 gunicorn
+
+# geo parse
+geopy
