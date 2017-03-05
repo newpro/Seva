@@ -274,12 +274,21 @@ def makeWebhookResult2(req):
         return {}
     result = req.get("result")
     parameters = result.get("parameters")
-    zone = parameters.get("location")
+    location = parameters.get("location")
     pack = parameters.get('packages')
     title = parameters.get('title')
-    #cost = {'Europe':100, 'North America':200, 'South America':300, 'Asia':400, 'Africa':500}
-    #speech = "The cost of shipping to " + zone + " is " + str(cost[zone]) + " euros."
-    speech = "Your appointment has been published. zone: {}, package: {}, title: {}".format(zone, pack, title)
+    speech = "Your appointment has been published. location: {}, package: {}, title: {}".format(location, pack, title)    
+    try:
+        type_ = dbs.fetch('package', pack)
+    except:
+        speech = 'package not find'
+    me = dbs.fetch('user', 'jan')
+    if not title:
+        title = 'request for help {}'.format(pack)
+    try:
+        me.request_service(title=title, package=type_.name, rush=False, addr=location)
+    except:
+        speech = 'Location can not be located :{}'.format(location)
 
     print("Response:")
     print(speech)
