@@ -225,7 +225,6 @@ function createHomepageGoogleMap(_latitude,_longitude,json){
 
             $.each(json.data, function(a) {
                 if( map.getBounds().contains( new google.maps.LatLng( json.data[a].latitude, json.data[a].longitude ) ) ) {
-                    is_cached(json.data[a].gallery[0], a);
                 }
             });
 

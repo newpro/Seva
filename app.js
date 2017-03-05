@@ -12,17 +12,10 @@ app.get('/',function(req,res){
             "latitude": 51.541599,
             "longitude": -0.112588,
             "url": "item-detail.html",
-            "type": "Apartment",
-            "type_icon": "assets/icons/store/apparel/umbrella-2.png",
+            "type": "Transport",
             "rating": 4,
-            "gallery":
-                [
-                ],
-            "features":
-                [
-                ],
             "date_created": "2014-11-03",
-            "price": "$2500",
+            "price": "100 credits",
             "featured": 0,
             "color": "",
             "person_id": 1,
@@ -38,22 +31,15 @@ app.get('/',function(req,res){
         {
             "id": 2,
             "category": "real_estate",
-            "title": "Steak House Restaurant",
+            "title": "Snow shoveling (small driveway)",
             "location": "63 Birch Street",
             "latitude": 51.544599,
             "longitude": -0.112588,
             "url": "item-detail.html",
-            "type": "Apartment",
-            "type_icon": "assets/icons/store/apparel/umbrella-2.png",
+            "type": "Household",
             "rating": 4,
-            "gallery":
-                [
-                ],
-            "features":
-                [
-                ],
             "date_created": "2014-11-03",
-            "price": "$2500",
+            "price": "200 credits",
             "featured": 0,
             "color": "",
             "person_id": 1,

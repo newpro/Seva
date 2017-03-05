@@ -88,19 +88,28 @@
                             <div class="line"></div>
                         </div>
                     </div>
+
+                    <!--/#map-->
+
+                    <!-- /.search-bar -->
                     <!--/.toggle-navigation-->
                     <div id="map" class="has-parallax"></div>
-                    <!--/#map-->
-                    <div class="search-bar horizontal">
-                        <form class="main-search border-less-inputs" role="form" method="post">
+                </div>
+                <!-- end Map -->
+                <!--Items List-->
+                <div class="items-list">
+                    <div class="inner">
+
+                                            <div class="search-bar horizontal">
+                        <form id="search" class="main-search border-less-inputs" role="form" method="post">
                             <div class="input-row">
                                 <!--<div class="form-group">-->
                                 <!--    <input type="text" class="form-control" id="keyword" placeholder="Enter Keyword">-->
                                 <!--</div>-->
                                 <!-- /.form-group -->
-                                <div class="form-group">
+                                <div class="form-group col-xs-12">
                                     <div class="input-group location">
-                                        <input type="text" class="form-control" id="location" placeholder="Enter Location">
+                                        <input type="text" class="form-control col-xs-10" id="location" placeholder="What city are you volunteering in?">
                                         <span class="input-group-addon"><i class="fa fa-map-marker geolocation" data-toggle="tooltip" data-placement="bottom" title="Find my position"></i></span>
                                     </div>
                                 </div>
@@ -124,7 +133,7 @@
                                 <!--</div>-->
                                 <!-- /.form-group -->
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                    <!--<button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>-->
                                 </div>
                                 <!-- /.form-group -->
                             </div>
@@ -132,15 +141,6 @@
                         </form>
                         <!-- /.main-search -->
                     </div>
-                    <!-- /.search-bar -->
-                </div>
-                <!-- end Map -->
-                <!--Items List-->
-                <div class="items-list">
-                    <div class="inner">
-                        <header>
-                            <h3>Results</h3>
-                        </header>
                         <ul class="results list">
 
                         </ul>
@@ -229,6 +229,14 @@
     $(window).load(function(){
         var rtl = false; // Use RTL
         initializeOwl(rtl);
+        $("#search").on('submit', function(e){
+            e.preventDefault();
+        })
+        
+        $(document).on('keypress', function(e){
+            if (key == 13) 
+                e.preventDefault();
+        })
     });
 
     autoComplete();
