@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <link href="{{ url_for('static', filename='fonts/font-awesome.css') }}" rel="stylesheet" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-select.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.style.css') }}" type="text/css">
+    <style>
+      table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+      }
+
+      td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+      }
+
+      tr:nth-child(even) {
+          background-color: #dddddd;
+      }
+    </style>
+
+    <title>Seva - Service everyone, value all</title>
+    <style>
+        input {
+            border : none;
+        }
+    </style>
+
+</head>
+
+<body onunload="" class="page-subpage page-profile navigation-top-header" id="page-top">
+
+<!-- Outer Wrapper-->
+<div id="outer-wrapper">
+    <!-- Inner Wrapper -->
+    <div id="inner-wrapper">
+        <!-- Navigation-->
+        <div class="header">
+            <div class="wrapper">
+                <div class="brand">
+                      <img "{{ url_for('static', filename='version-selector/logo.png') }}" style="width:70px" alt="">
+                </div>
+                <div class="navigation-items">
+                    <div class="wrapper">
+                        <ul class="user-area">
+                            <li><a href="profile.html"></a></li>
+                            <li><a href="my-items.html"><strong>My Items<strong></a></li>
+                            <li><a href="#"><i class="fa fa-cog"></i></a></li>
+                        </ul>
+                        <a href="submit.html" class="submit-item">
+                            <div class="content"><span>Submit Your Item</span></div>
+                            <div class="icon">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                        </a>
+                        <div class="toggle-navigation">
+                            <div class="icon">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end Navigation-->
+        <!-- Page Canvas-->
+        <div id="page-canvas">
+            <!--Off Canvas Navigation-->
+            <nav class="off-canvas-navigation">
+                <header>Navigation</header>
+                <div class="main-navigation navigation-off-canvas"></div>
+            </nav>
+            <!--end Off Canvas Navigation-->
+
+            <!--Sub Header-->
+            <section class="sub-header">
+                <div class="search-bar horizontal collapse" id="redefine-search-form"></div>
+                <!-- /.search-bar -->
+                <div class="breadcrumb-wrapper">
+                    <div class="container">
+                        <div class="redefine-search">
+                            <a href="#redefine-search-form" class="inner" data-toggle="collapse" aria-expanded="false" aria-controls="redefine-search-form">
+                                <span class="icon"></span>
+                                <span>Redefine Search</span>
+                            </a>
+                        </div>
+                        <ol class="breadcrumb">
+                            <li><a href="index-directory.html"><i class="fa fa-home"></i></a></li>
+                            <li><a href="#">Page</a></li>
+                            <li class="active">Detail</li>
+                        </ol>
+                        <!-- /.breadcrumb-->
+                    </div>
+                    <!-- /.container-->
+                </div>
+                <!-- /.breadcrumb-wrapper-->
+            </section>
+            <!--end Sub Header-->
+
+            <!--Page Content-->
+            <div id="page-content">
+                <section class="container">
+                    <header>
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="my-items.html"><h1 class="page-title">Neil Selvalingam</h1></a></li>
+                            <li><a href="{{url_for('seva_profile', uid='1')}}"><h1 class="page-title">Caregiver profile</h1></a></li>
+                        </ul>
+                    </header>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <form id="form-profile" role="form" method="post" action="?" enctype="multipart/form-data">
+                                <div class="row">
+                                    <!--Profile Picture-->
+                                    <div class="col-md-3 col-sm-3">
+                                        <section>
+                                            <h3><i class="fa fa-image"></i>Profile Picture</h3>
+                                            <div id="profile-picture" class="profile-picture dropzone">
+                                                <input name="file" type="file">
+                                                <div class="dz-default dz-message"><span>Click or drop picture here</span></div>
+                                                <img src="{{ url_for('static',filename='img/elder.jpg') }}" alt="">
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="rating" data-rating="4"></div>
+
+                                    <!--/.col-md-3-->
+
+                                    <!--Contact Info-->
+                                    <div class="col-md-9 col-sm-9">
+                                        <section>
+                                            <h3><i class="fa fa-user"></i>Personal Info</h3>
+                                            <div class="row">
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-group">
+                                                        Name: Neil Selvalingam
+                                                    </div>
+                                                    <!--/.form-group-->
+                                                </div>
+                                                <!--/.col-md-3-->
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-group">
+                                                        Email: neilselvaling@gmail.com
+                                                    </div>
+                                                    <!--/.form-group-->
+                                                </div>
+                                                <!--/.col-md-3-->
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-group">
+                                                        Mobile: MASKED
+                                                    </div>
+                                                    <!--/.form-group-->
+                                                </div>
+                                                <!--/.col-md-3-->
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-group">
+                                                        Phone: MASKED
+                                                    </div>
+                                                    <!--/.form-group-->
+                                                </div>
+                                                <!--/.col-md-3-->
+                                            </div>
+                                        </section>
+                                        <section>
+                                            <h3><i class="fa fa-map-marker"></i>Address</h3>
+
+                                            <!--/.form-group-->
+                                            <div class="row">
+                                                <div class="col-md-8 col-sm-8">
+                                                    <div class="form-group">
+                                                        2050 Sampson Street, Toronto
+                                                    </div>
+                                                    <!--/.form-group-->
+                                                </div>
+                                                <!--/.col-md-8-->
+
+                                            </div>
+                                            <!--/.form-group-->
+                                        </section>
+                                        <section>
+                                            <h3><i class="fa fa-info-circle"></i>About Me</h3>
+                                            <div class="form-group">
+                                                <label for="about-me">Some Words About This Care Receiver</label>
+                                                <div class="form-group">
+                                                    <p>Sufferring from mild dementia.</p>
+                                                </div>
+                                                <!--/.form-group-->
+                                            </div>
+                                            <!--/.form-group-->
+                                        </section>
+                                        <section>
+
+                                        <h3>Functional summary</h3>
+                                        <table>
+                                          <tr>
+                                            <th>Mark_</th>
+                                            <th>Description</th>
+                                            <th>Condition</th>
+                                          </tr>
+                                          <tr>
+                                            <th>1</th>
+                                            <th>Memory loss that affects day-to-day abilities?</th>
+                                            <th>NO</th>
+                                          </tr>
+                                          <tr>
+                                            <th>2</th>
+                                            <th>Difficulty performing familiar tasks?</th>
+                                            <th>YES</th>
+                                          </tr>
+                                          <tr>
+                                            <th>3</th>
+                                            <th>Problems with language such as forgetting or using wrong words?</th>
+                                            <th>YES</th>
+                                          </tr>
+                                          <tr>
+                                            <th>4</th>
+                                            <th>Disorientation in time and space?</th>
+                                            <th>YES</th>
+                                          </tr>
+                                          <tr>
+                                            <th>5</th>
+                                            <th>Impaired judgement?</th>
+                                            <th>NO</th>
+                                          </tr>
+                                          <tr>
+                                            <th>6</th>
+                                            <th>Frequent problems with complicated tasks?</th>
+                                            <th>NO</th>
+                                          </tr>
+                                          <tr>
+                                            <th>7</th>
+                                            <th>Misplacing things?</th>
+                                            <th>Yes</th>
+                                          </tr>
+                                          <tr>
+                                            <th>8</th>
+                                            <th>Sudden changes in mood and behavior?</th>
+                                            <th>No</th>
+                                          </tr>
+                                          <tr>
+                                            <th>9</th>
+                                            <th>Changes in personality?</th>
+                                            <th>No</th>
+                                          </tr>
+                                          <tr>
+                                            <th>10</th>
+                                            <th>Loss of interest in doing things?</th>
+                                            <th>No</th>
+                                          </tr>
+                                        </table>
+                                        </section>
+                                        <!-- /.form-group -->
+                                    </div>
+                                    <!--/.col-md-6-->
+                                </div>
+                            </form>
+                        </div>
+                        <!-- /.col-md-3-->
+                    </div>
+                </section>
+            </div>
+            <!-- end Page Content-->
+        </div>
+        <!-- end Page Canvas-->
+
+    </div>
+    <!-- end Inner Wrapper -->
+</div>
+
+
+<!-- end Outer Wrapper-->
+
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery-2.1.0.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/before.load.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery-ui.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery-migrate-1.2.1.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'bootstrap/js/bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/smoothscroll.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap-select.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.hotkeys.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/dropzone.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/custom.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename = 'js/maps.js') }}"></script>
+
+
+<!--[if lte IE 9]>
+<script type="text/javascript" src="assets/js/ie-scripts.js"></script>
+<![endif]-->
+</body>
+</html>

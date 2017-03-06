@@ -133,7 +133,17 @@ def logout():
 def seva():
     return render_template('seva/index.html')
 
+@app.route('/seva/<uid>')
+def seva_profile(uid):
+    if uid == '1':
+        return render_template('seva/profile_display.html')
+    elif uid == '2':
+        return render_template('seva/profile1.html')
+    else:
+        return render_template('seva/profile.html')
+
 # com
+@app.route('/seva/assets/external/<string:page_name>')
 @app.route('/assets/external/<string:page_name>')
 def asset_external(page_name):
     return render_template('external/%s' % page_name)
